@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frik-invoice-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frik-invoice-frontend
+  template:
+    metadata:
+      labels:
+        app: frik-invoice-frontend
+    spec:
+      containers:
+        - name: frik-invoice-frontend
+          image: docker.io/keanuwatts/theclusterflux:FrikInvoiceFrontend
+          imagePullPolicy: Always
+          env:
+          - name: REACT_APP_API_URL
+            value: "https://frik-invoice-bff.theclusterflux.com/api/v1"
+          - name: REACT_APP_ENVIRONMENT
+            value: "production"
+      imagePullSecrets:
+        - name: dockerhub-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frik-invoice-frontend
+spec:
+  selector:
+    app: frik-invoice-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frik-invoice-frontend
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - frik-invoice.theclusterflux.com
+    secretName: theclusterflux
+  rules:
+  - host: frik-invoice.theclusterflux.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frik-invoice-frontend
+            port:
+              number: 80
