@@ -1,0 +1,247 @@
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import styled from 'styled-components';
+import { useAuth } from '../contexts/AuthContext';
+
+const LayoutContainer = styled.div<{ sidebarCollapsed: boolean }>`
+  display: flex;
+  min-height: 100vh;
+  transition: all 0.3s ease;
+`;
+
+const Sidebar = styled.aside<{ collapsed: boolean }>`
+  width: ${({ collapsed }) => collapsed ? '70px' : '250px'};
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  padding: 20px 0;
+  transition: all 0.3s ease;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1000;
+`;
+
+const SidebarHeader = styled.div<{ collapsed: boolean }>`
+  padding: 0 ${({ collapsed }) => collapsed ? '10px' : '20px'} 20px;
+  border-bottom: 1px solid #495057;
+  margin-bottom: 20px;
+  text-align: ${({ collapsed }) => collapsed ? 'center' : 'left'};
+`;
+
+const Logo = styled.h2<{ collapsed: boolean }>`
+  font-size: ${({ collapsed }) => collapsed ? '16px' : '20px'};
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+`;
+
+const Nav = styled.nav<{ collapsed: boolean }>`
+  padding: 0 ${({ collapsed }) => collapsed ? '10px' : '20px'};
+`;
+
+const NavItem = styled(Link)<{ active?: boolean; collapsed?: boolean }>`
+  display: flex;
+  align-items: center;
+  padding: 12px ${({ collapsed }) => collapsed ? '8px' : '16px'};
+  color: ${({ active }) => (active ? '#fff' : '#adb5bd')};
+  text-decoration: none;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  transition: all 0.2s ease;
+  background-color: ${({ active }) => (active ? '#007bff' : 'transparent')};
+  position: relative;
+  justify-content: ${({ collapsed }) => collapsed ? 'center' : 'flex-start'};
+
+  &:hover {
+    color: #fff;
+    background-color: ${({ active }) => (active ? '#0056b3' : '#495057')};
+    transform: translateX(${({ collapsed }) => collapsed ? '0' : '4px'});
+  }
+
+  span {
+    margin-left: ${({ collapsed }) => collapsed ? '0' : '12px'};
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: ${({ collapsed }) => collapsed ? '0' : '1'};
+    transition: all 0.3s ease;
+  }
+
+  /* Show tooltip on hover when collapsed */
+  &:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-left: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: ${({ collapsed }) => collapsed ? '1' : '0'};
+    pointer-events: none;
+  }
+
+  /* Arrow for tooltip */
+  &:hover::before {
+    content: '';
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-right-color: #2c3e50;
+    margin-left: 2px;
+    opacity: ${({ collapsed }) => collapsed ? '1' : '0'};
+    pointer-events: none;
+  }
+
+  /* Enhanced active state when collapsed */
+  ${({ active, collapsed }) => active && collapsed && `
+    background-color: #007bff !important;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+    transform: scale(1.05);
+  `}
+`;
+
+const ToggleButton = styled.button`
+  position: absolute;
+  top: 20px;
+  right: -15px;
+  width: 30px;
+  height: 30px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  z-index: 1001;
+
+  &:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+  }
+`;
+
+const MainContent = styled.main<{ sidebarCollapsed: boolean }>`
+  flex: 1;
+  padding: 20px;
+  margin-left: ${({ sidebarCollapsed }) => sidebarCollapsed ? '0' : '0'};
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+`;
+
+const Header = styled.header`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #dee2e6;
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+const UserName = styled.span`
+  font-weight: 500;
+  color: #333;
+`;
+
+const LogoutButton = styled.button`
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+  }
+`;
+
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const navItems = [
+    { path: '/', label: 'Dashboard', icon: '📊' },
+    { path: '/inventory', label: 'Inventory', icon: '📦' },
+    { path: '/clients', label: 'Clients', icon: '👥' },
+    { path: '/orders', label: 'Orders', icon: '📋' },
+    ...(user?.role === 'admin' ? [{ path: '/users', label: 'Users', icon: '👤' }] : []),
+  ];
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  return (
+    <LayoutContainer sidebarCollapsed={sidebarCollapsed}>
+      <Sidebar collapsed={sidebarCollapsed}>
+        <SidebarHeader collapsed={sidebarCollapsed}>
+          <Logo collapsed={sidebarCollapsed}>
+            {sidebarCollapsed ? 'FI' : 'FrikInvoice'}
+          </Logo>
+        </SidebarHeader>
+        <Nav collapsed={sidebarCollapsed}>
+          {navItems.map((item) => (
+            <NavItem
+              key={item.path}
+              to={item.path}
+              active={location.pathname === item.path}
+              collapsed={sidebarCollapsed}
+              data-tooltip={item.label}
+            >
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </NavItem>
+          ))}
+        </Nav>
+        <ToggleButton onClick={toggleSidebar}>
+          {sidebarCollapsed ? '→' : '←'}
+        </ToggleButton>
+      </Sidebar>
+      
+      <MainContent sidebarCollapsed={sidebarCollapsed}>
+        <Header>
+          <h1>Order Management System</h1>
+          <UserInfo>
+            <UserName>Welcome, {user?.username}</UserName>
+            <LogoutButton onClick={logout}>Logout</LogoutButton>
+          </UserInfo>
+        </Header>
+        {children}
+      </MainContent>
+    </LayoutContainer>
+  );
+};
+
+export default Layout;
+
