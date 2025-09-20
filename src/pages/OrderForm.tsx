@@ -1538,131 +1538,133 @@ const OrderFormPage: React.FC = () => {
             />
           )}
           
-          <Grid columns={2}>
-            <FormGroup>
-              <Label>Customer Name *</Label>
-              <Input
-                type="text"
-                value={formData.customerInfo.name}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    customerInfo: { ...formData.customerInfo, name: e.target.value },
-                  })
-                }
-                required
-              />
-              {validateCustomerName(formData.customerInfo.name) && (
-                <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
-                  {validateCustomerName(formData.customerInfo.name)}
-                </div>
-              )}
-            </FormGroup>
-            <FormGroup>
-              <Label>Email</Label>
-              <Input
-                type="email"
-                value={formData.customerInfo.email}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    customerInfo: { ...formData.customerInfo, email: e.target.value },
-                  })
-                }
-              />
-              {validateEmail(formData.customerInfo.email) && (
-                <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
-                  {validateEmail(formData.customerInfo.email)}
-                </div>
-              )}
-            </FormGroup>
-            <FormGroup>
-              <Label>Phone</Label>
-              <Input
-                type="tel"
-                value={formData.customerInfo.phone}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    customerInfo: { ...formData.customerInfo, phone: e.target.value },
-                  })
-                }
-              />
-              {validatePhone(formData.customerInfo.phone) && (
-                <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
-                  {validatePhone(formData.customerInfo.phone)}
-                </div>
-              )}
-            </FormGroup>
-          </Grid>
+          <FormGroup>
+            <Label>Customer Name *</Label>
+            <Input
+              type="text"
+              value={formData.customerInfo.name}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  customerInfo: { ...formData.customerInfo, name: e.target.value },
+                })
+              }
+              required
+            />
+            {validateCustomerName(formData.customerInfo.name) && (
+              <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
+                {validateCustomerName(formData.customerInfo.name)}
+              </div>
+            )}
+          </FormGroup>
+          
+          <FormGroup>
+            <Label>Email</Label>
+            <Input
+              type="email"
+              value={formData.customerInfo.email}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  customerInfo: { ...formData.customerInfo, email: e.target.value },
+                })
+              }
+            />
+            {validateEmail(formData.customerInfo.email) && (
+              <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
+                {validateEmail(formData.customerInfo.email)}
+              </div>
+            )}
+          </FormGroup>
+          
+          <FormGroup>
+            <Label>Phone</Label>
+            <Input
+              type="tel"
+              value={formData.customerInfo.phone}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  customerInfo: { ...formData.customerInfo, phone: e.target.value },
+                })
+              }
+            />
+            {validatePhone(formData.customerInfo.phone) && (
+              <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
+                {validatePhone(formData.customerInfo.phone)}
+              </div>
+            )}
+          </FormGroup>
           
           <SectionTitle>Address</SectionTitle>
-          <Grid columns={2}>
-            <FormGroup>
-              <Label>Street</Label>
-              <Input
-                type="text"
-                value={formData.customerInfo.address?.street || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    customerInfo: {
-                      ...formData.customerInfo,
-                      address: { ...formData.customerInfo.address, street: e.target.value },
-                    },
-                  })
-                }
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>City</Label>
-              <Input
-                type="text"
-                value={formData.customerInfo.address?.city || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    customerInfo: {
-                      ...formData.customerInfo,
-                      address: { ...formData.customerInfo.address, city: e.target.value },
-                    },
-                  })
-                }
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>State</Label>
-              <Input
-                type="text"
-                value={formData.customerInfo.address?.state || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    customerInfo: {
-                      ...formData.customerInfo,
-                      address: { ...formData.customerInfo.address, state: e.target.value },
-                    },
-                  })
-                }
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>ZIP Code</Label>
-              <Input
-                type="text"
-                value={formData.customerInfo.address?.zipCode || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    customerInfo: {
-                      ...formData.customerInfo,
-                      address: { ...formData.customerInfo.address, zipCode: e.target.value },
-                    },
-                  })
-                }
-              />
-            </FormGroup>
-          </Grid>
+          
+          <FormGroup>
+            <Label>Street</Label>
+            <Input
+              type="text"
+              value={formData.customerInfo.address?.street || ''}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  customerInfo: {
+                    ...formData.customerInfo,
+                    address: { ...formData.customerInfo.address, street: e.target.value },
+                  },
+                })
+              }
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <Label>City</Label>
+            <Input
+              type="text"
+              value={formData.customerInfo.address?.city || ''}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  customerInfo: {
+                    ...formData.customerInfo,
+                    address: { ...formData.customerInfo.address, city: e.target.value },
+                  },
+                })
+              }
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <Label>State</Label>
+            <Input
+              type="text"
+              value={formData.customerInfo.address?.state || ''}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  customerInfo: {
+                    ...formData.customerInfo,
+                    address: { ...formData.customerInfo.address, state: e.target.value },
+                  },
+                })
+              }
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <Label>ZIP Code</Label>
+            <Input
+              type="text"
+              value={formData.customerInfo.address?.zipCode || ''}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  customerInfo: {
+                    ...formData.customerInfo,
+                    address: { ...formData.customerInfo.address, zipCode: e.target.value },
+                  },
+                })
+              }
+            />
+          </FormGroup>
         </Card>
 
         <Card>

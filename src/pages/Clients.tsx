@@ -240,6 +240,10 @@ const FormGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const AddressSection = styled.div`
@@ -253,6 +257,10 @@ const AddressGrid = styled.div`
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 16px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const FilterLabel = styled.label`
@@ -506,6 +514,7 @@ const Clients: React.FC = () => {
                   required
                 />
               </div>
+              
               <div>
                 <label>{t('email')}</label>
                 <Input
@@ -514,6 +523,7 @@ const Clients: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
+              
               <div>
                 <label>{t('phone')}</label>
                 <Input
@@ -523,6 +533,7 @@ const Clients: React.FC = () => {
                   placeholder={t('phonePlaceholder')}
                 />
               </div>
+              
               <div>
                 <label>{t('taxNumber')}</label>
                 <Input
@@ -549,6 +560,7 @@ const Clients: React.FC = () => {
                     placeholder={t('streetAddressPlaceholder')}
                   />
                 </div>
+                
                 <div>
                   <label>{t('cityTown')}</label>
                   <Input
@@ -561,6 +573,7 @@ const Clients: React.FC = () => {
                     placeholder={t('cityPlaceholder')}
                   />
                 </div>
+                
                 <div>
                   <label>{t('province')}</label>
                   <Input
@@ -573,6 +586,7 @@ const Clients: React.FC = () => {
                     placeholder={t('provincePlaceholder')}
                   />
                 </div>
+                
                 <div>
                   <label>{t('postalCode')}</label>
                   <Input

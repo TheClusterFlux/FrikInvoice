@@ -97,7 +97,7 @@ const NavItem = styled(Link)<{ active?: boolean; collapsed?: boolean }>`
 
   /* Text styling */
   span:last-child {
-    margin-left: 0;
+    margin-left: ${({ collapsed }) => collapsed ? '0' : '8px'};
     font-size: 14px;
   }
 

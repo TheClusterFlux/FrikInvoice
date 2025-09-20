@@ -1,6 +1,10 @@
 import styled, { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyles = createGlobalStyle`
+  html {
+    overflow-x: hidden;
+  }
+
   * {
     margin: 0;
     padding: 0;
@@ -16,6 +20,7 @@ export const GlobalStyles = createGlobalStyle`
     background-color: var(--bg-primary);
     color: var(--text-primary);
     transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
   }
 
   code {

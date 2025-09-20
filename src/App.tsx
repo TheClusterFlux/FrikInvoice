@@ -36,34 +36,34 @@ const App: React.FC = () => {
     return <LoadingSpinner />;
   }
 
-  if (!user) {
-    return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    );
-  }
-
   return (
     <TranslationProvider>
       <ThemeProvider>
         <GlobalStyles />
-        {showPasswordChange && (
-          <PasswordChangeModal onSuccess={handlePasswordChangeSuccess} />
-        )}
-        <Layout>
+        {!user ? (
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/clients" element={<Clients />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/orders/new" element={<OrderForm />} />
-            <Route path="/orders/:id/edit" element={<OrderForm />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-        </Layout>
+        ) : (
+          <>
+            {showPasswordChange && (
+              <PasswordChangeModal onSuccess={handlePasswordChangeSuccess} />
+            )}
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/inventory" element={<Inventory />} />
+                <Route path="/clients" element={<Clients />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/orders/new" element={<OrderForm />} />
+                <Route path="/orders/:id/edit" element={<OrderForm />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Layout>
+          </>
+        )}
       </ThemeProvider>
     </TranslationProvider>
   );

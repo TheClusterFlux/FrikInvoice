@@ -70,7 +70,7 @@ const StatLabel = styled.div`
   font-size: 14px;
   color: var(--text-secondary);
   margin-bottom: 16px;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.5px;
   
   @media (max-width: 768px) {
