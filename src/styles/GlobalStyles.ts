@@ -51,6 +51,9 @@ export const GlobalStyles = createGlobalStyle`
     --text-secondary: #666666;
     --border-color: #dee2e6;
     --shadow-color: rgba(0, 0, 0, 0.1);
+    --success-bg: #f0fff4;
+    --success-border: #9ae6b4;
+    --success-text: #22543d;
   }
 
   /* Dark mode support */
@@ -61,6 +64,9 @@ export const GlobalStyles = createGlobalStyle`
     --text-secondary: #b0b0b0;
     --border-color: #404040;
     --shadow-color: rgba(0, 0, 0, 0.3);
+    --success-bg: #1a3d1a;
+    --success-border: #4a7c59;
+    --success-text: #a7f3a7;
   }
 
   [data-theme="light"] {
@@ -70,6 +76,9 @@ export const GlobalStyles = createGlobalStyle`
     --text-secondary: #666666;
     --border-color: #dee2e6;
     --shadow-color: rgba(0, 0, 0, 0.1);
+    --success-bg: #f0fff4;
+    --success-border: #9ae6b4;
+    --success-text: #22543d;
   }
 
   /* Dark mode body styles */
