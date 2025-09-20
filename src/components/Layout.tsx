@@ -222,35 +222,20 @@ const BurgerButton = styled.button<{ isOpen: boolean }>`
   
   @media (max-width: 768px) {
     display: flex;
-    flex-direction: column;
-    justify-content: space-around;
+    align-items: center;
+    justify-content: center;
     width: 30px;
     height: 30px;
     background: transparent;
     border: none;
     cursor: pointer;
     padding: 0;
+    font-size: 20px;
+    color: white;
+    transition: all 0.2s ease;
     
-    span {
-      width: 25px;
-      height: 3px;
-      background: white;
-      border-radius: 3px;
-      transition: all 0.3s ease;
-      transform-origin: 1px;
-      
-      &:nth-child(1) {
-        transform: ${({ isOpen }) => isOpen ? 'rotate(45deg)' : 'rotate(0)'};
-      }
-      
-      &:nth-child(2) {
-        opacity: ${({ isOpen }) => isOpen ? '0' : '1'};
-        transform: ${({ isOpen }) => isOpen ? 'translateX(20px)' : 'translateX(0)'};
-      }
-      
-      &:nth-child(3) {
-        transform: ${({ isOpen }) => isOpen ? 'rotate(-45deg)' : 'rotate(0)'};
-      }
+    &:hover {
+      transform: scale(1.1);
     }
   }
 `;
@@ -600,9 +585,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <MobileNavbar isOpen={mobileNavOpen} data-mobile-nav>
         <MobileLogo>FrikInvoice</MobileLogo>
         <BurgerButton isOpen={mobileNavOpen} onClick={toggleMobileNav}>
-          <span></span>
-          <span></span>
-          <span></span>
+          {mobileNavOpen ? '✕' : '☰'}
         </BurgerButton>
       </MobileNavbar>
 
