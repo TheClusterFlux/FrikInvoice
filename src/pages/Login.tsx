@@ -9,7 +9,7 @@ const LoginContainer = styled.div`
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--bg-primary);
 `;
 
 const LoginCard = styled(Card)`
@@ -21,7 +21,7 @@ const LoginCard = styled(Card)`
 const LoginTitle = styled.h1`
   text-align: center;
   margin-bottom: 30px;
-  color: #333;
+  color: var(--text-primary);
 `;
 
 const LoginForm = styled.form`
@@ -63,7 +63,7 @@ const Login: React.FC = () => {
   return (
     <LoginContainer>
       <LoginCard>
-        <LoginTitle>FrikInvoice Login</LoginTitle>
+        <LoginTitle>FrikInvoice login</LoginTitle>
         <LoginForm onSubmit={handleSubmit}>
           <FormGroup>
             <Label htmlFor="username">Username</Label>

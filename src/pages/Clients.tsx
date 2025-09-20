@@ -31,11 +31,70 @@ const FilterGroup = styled.div`
 
 const ClientsTable = styled(Table)`
   margin-bottom: 20px;
+  table-layout: fixed;
+  width: 100%;
+`;
+
+const NameColumn = styled.td`
+  width: 20%;
+  word-break: break-word;
+`;
+
+const ContactColumn = styled.td`
+  width: 20%;
+  word-break: break-word;
+`;
+
+const AddressColumn = styled.td`
+  width: 30%;
+  word-break: break-word;
+`;
+
+const TaxColumn = styled.td`
+  width: 10%;
+  word-break: break-word;
+`;
+
+const StatusColumn = styled.td`
+  width: 10%;
+  word-break: break-word;
+`;
+
+const ActionsColumn = styled.td`
+  width: 10%;
+  text-align: right;
+  padding-right: 16px;
+`;
+
+const NameHeader = styled.th`
+  width: 20%;
+`;
+
+const ContactHeader = styled.th`
+  width: 20%;
+`;
+
+const AddressHeader = styled.th`
+  width: 30%;
+`;
+
+const TaxHeader = styled.th`
+  width: 10%;
+`;
+
+const StatusHeader = styled.th`
+  width: 10%;
+`;
+
+const ActionsHeader = styled.th`
+  width: 10%;
+  text-align: right;
 `;
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
 `;
 
 const FormGrid = styled.div`
@@ -275,9 +334,9 @@ const Clients: React.FC = () => {
   return (
     <ClientsContainer>
       <PageHeader>
-        <PageTitle>Client Management</PageTitle>
+        <PageTitle>Client management</PageTitle>
         {user?.role === 'admin' && (
-          <Button onClick={() => setShowForm(true)}>Add New Client</Button>
+          <Button onClick={() => setShowForm(true)}>Add new client</Button>
         )}
       </PageHeader>
 
@@ -287,12 +346,12 @@ const Clients: React.FC = () => {
         variant={alternatingRows ? 'primary' : 'secondary'}
         onClick={() => setAlternatingRows(!alternatingRows)}
       >
-        {alternatingRows ? 'Disable' : 'Enable'} Alternating Row Colors
+        {alternatingRows ? 'Disable' : 'Enable'} alternating row colors
       </ToggleButton>
 
       <FiltersContainer>
         <FilterGroup>
-          <FilterLabel>Search:</FilterLabel>
+          <FilterLabel>Search</FilterLabel>
           <Input
             type="text"
             placeholder="Search clients..."
@@ -304,7 +363,7 @@ const Clients: React.FC = () => {
 
       {showForm && user?.role === 'admin' && (
         <Card>
-          <h3>{editingClient ? 'Edit Client' : 'Add New Client'}</h3>
+          <h3>{editingClient ? 'Edit client' : 'Add new client'}</h3>
           <form onSubmit={handleSubmit}>
             <FormGrid>
               <div>
@@ -432,7 +491,7 @@ const Clients: React.FC = () => {
             )}
             <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
               <Button type="submit" disabled={createMutation.isLoading || updateMutation.isLoading}>
-                {editingClient ? 'Update Client' : 'Add Client'}
+                {editingClient ? 'Save client' : 'Add client'}
               </Button>
               <Button 
                 type="button" 
@@ -453,39 +512,39 @@ const Clients: React.FC = () => {
       <ClientsTable>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Contact</th>
-            <th>Address</th>
-            <th>Tax Number</th>
-            <th>Status</th>
-            {user?.role === 'admin' && <th>Actions</th>}
+            <NameHeader>Name</NameHeader>
+            <ContactHeader>Contact</ContactHeader>
+            <AddressHeader>Address</AddressHeader>
+            <TaxHeader>Tax Number</TaxHeader>
+            <StatusHeader>Status</StatusHeader>
+            {user?.role === 'admin' && <ActionsHeader>Actions</ActionsHeader>}
           </tr>
         </thead>
         <tbody>
           {clientsData?.data.map((client, index) => (
             <TableRow key={client._id} alternating={alternatingRows} index={index}>
-              <td>
+              <NameColumn>
                 <strong>{client.name}</strong>
-              </td>
-              <td>
+              </NameColumn>
+              <ContactColumn>
                 <div>
                   {client.email && <div>{client.email}</div>}
                   {client.phone && <div>{client.phone}</div>}
                 </div>
-              </td>
-              <td>
+              </ContactColumn>
+              <AddressColumn>
                 <div style={{ fontSize: '14px', color: '#666' }}>
                   {formatAddress(client.address)}
                 </div>
-              </td>
-              <td>{client.taxNumber || '-'}</td>
-              <td>
+              </AddressColumn>
+              <TaxColumn>{client.taxNumber || '-'}</TaxColumn>
+              <StatusColumn>
                 <StatusBadge status={client.isActive ? 'active' : 'inactive'}>
                   {client.isActive ? 'Active' : 'Inactive'}
                 </StatusBadge>
-              </td>
+              </StatusColumn>
               {user?.role === 'admin' && (
-                <td>
+                <ActionsColumn>
                   <ActionButtons>
                     <Button 
                       variant="secondary" 
@@ -502,7 +561,7 @@ const Clients: React.FC = () => {
                       Delete
                     </Button>
                   </ActionButtons>
-                </td>
+                </ActionsColumn>
               )}
             </TableRow>
           ))}
@@ -527,19 +586,19 @@ const Clients: React.FC = () => {
       {showDeleteConfirm && (
         <ConfirmationModal>
           <ConfirmationDialog>
-            <h3>Confirm Delete</h3>
+            <h3>Confirm delete</h3>
             <p>Are you sure you want to delete the client <strong>{showDeleteConfirm.name}</strong>?</p>
-            <p style={{ color: '#666', fontSize: '14px' }}>This action cannot be undone.</p>
+            <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>This action cannot be undone.</p>
             <ConfirmationButtons>
               <Button variant="secondary" onClick={() => setShowDeleteConfirm(null)}>
-                Cancel
+                No
               </Button>
               <Button 
                 variant="danger" 
                 onClick={() => deleteMutation.mutate(showDeleteConfirm._id)}
                 disabled={deleteMutation.isLoading}
               >
-                {deleteMutation.isLoading ? 'Deleting...' : 'Delete'}
+                {deleteMutation.isLoading ? 'Deleting...' : 'Yes, delete'}
               </Button>
             </ConfirmationButtons>
           </ConfirmationDialog>

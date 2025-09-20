@@ -13,8 +13,9 @@ export const GlobalStyles = createGlobalStyle`
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #f5f5f5;
-    color: #333;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   code {
@@ -36,6 +37,54 @@ export const GlobalStyles = createGlobalStyle`
     text-decoration: none;
     color: inherit;
   }
+
+  /* Default light theme - fallback */
+  :root {
+    --bg-primary: #f8f9fa;
+    --bg-secondary: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #dee2e6;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Dark mode support */
+  [data-theme="dark"] {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --border-color: #404040;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+  }
+
+  [data-theme="light"] {
+    --bg-primary: #f8f9fa;
+    --bg-secondary: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #dee2e6;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Dark mode body styles */
+  [data-theme="dark"] body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  /* Ensure all elements inherit theme colors */
+  [data-theme="dark"] * {
+    color: inherit;
+  }
+
+  /* Force dark mode on all cards and containers */
+  [data-theme="dark"] .card,
+  [data-theme="dark"] [class*="Card"],
+  [data-theme="dark"] [class*="card"] {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+  }
 `;
 
 export const Container = styled.div`
@@ -45,11 +94,13 @@ export const Container = styled.div`
 `;
 
 export const Card = styled.div`
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--shadow-color);
   padding: 24px;
   margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
 `;
 
 export const Button = styled.button<{ variant?: 'primary' | 'secondary' | 'danger' }>`
@@ -100,9 +151,11 @@ export const Button = styled.button<{ variant?: 'primary' | 'secondary' | 'dange
 export const Input = styled.input`
   width: 100%;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   transition: border-color 0.2s ease;
 
   &:focus {
@@ -117,12 +170,14 @@ export const Input = styled.input`
 export const TextArea = styled.textarea`
   width: 100%;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
   min-height: 100px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   transition: border-color 0.2s ease;
 
   &:focus {
@@ -133,10 +188,11 @@ export const TextArea = styled.textarea`
 export const Select = styled.select`
   width: 100%;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
-  background-color: white;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   transition: border-color 0.2s ease;
 
   &:focus {
@@ -148,7 +204,7 @@ export const Label = styled.label`
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 `;
 
 export const FormGroup = styled.div`
@@ -171,7 +227,7 @@ export const LoadingSpinner = styled.div`
     content: '';
     width: 40px;
     height: 40px;
-    border: 4px solid #f3f3f3;
+    border: 4px solid var(--border-color);
     border-top: 4px solid #007bff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -186,25 +242,26 @@ export const LoadingSpinner = styled.div`
 export const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--shadow-color);
 
   th, td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
   }
 
   th {
-    background-color: #f8f9fa;
+    background-color: var(--bg-primary);
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
   }
 
   tr:hover {
-    background-color: #f8f9fa;
+    background-color: var(--bg-primary);
   }
 `;
 
@@ -218,17 +275,84 @@ export const StatusBadge = styled.span<{ status: string }>`
   ${({ status }) => {
     switch (status) {
       case 'draft':
-        return 'background-color: #f8f9fa; color: #6c757d;';
+        return `
+          background-color: var(--bg-primary);
+          color: var(--text-secondary);
+          border: 1px solid var(--border-color);
+        `;
       case 'pending':
-        return 'background-color: #fff3cd; color: #856404;';
+        return `
+          background-color: #fff3cd;
+          color: #856404;
+          border: 1px solid #ffeaa7;
+        `;
       case 'signed':
-        return 'background-color: #d4edda; color: #155724;';
+        return `
+          background-color: #d4edda;
+          color: #155724;
+          border: 1px solid #c3e6cb;
+        `;
       case 'completed':
-        return 'background-color: #d1ecf1; color: #0c5460;';
+        return `
+          background-color: #d1ecf1;
+          color: #0c5460;
+          border: 1px solid #bee5eb;
+        `;
+      case 'active':
+        return `
+          background-color: #d4edda;
+          color: #155724;
+          border: 1px solid #c3e6cb;
+        `;
+      case 'inactive':
+        return `
+          background-color: #f8d7da;
+          color: #721c24;
+          border: 1px solid #f5c6cb;
+        `;
       default:
-        return 'background-color: #f8f9fa; color: #6c757d;';
+        return `
+          background-color: var(--bg-primary);
+          color: var(--text-secondary);
+          border: 1px solid var(--border-color);
+        `;
     }
   }}
+
+  /* Dark mode overrides */
+  [data-theme="dark"] & {
+    ${({ status }) => {
+      switch (status) {
+        case 'pending':
+          return `
+            background-color: #4a3c00;
+            color: #ffd700;
+            border-color: #6b5b00;
+          `;
+        case 'signed':
+        case 'active':
+          return `
+            background-color: #1a4d1a;
+            color: #90ee90;
+            border-color: #2d5a2d;
+          `;
+        case 'completed':
+          return `
+            background-color: #0d3a3a;
+            color: #87ceeb;
+            border-color: #1a5a5a;
+          `;
+        case 'inactive':
+          return `
+            background-color: #4a1a1a;
+            color: #ffb3b3;
+            border-color: #6b2a2a;
+          `;
+        default:
+          return '';
+      }
+    }}
+  }
 `;
 
 export const PageHeader = styled.div`
@@ -241,7 +365,7 @@ export const PageHeader = styled.div`
 export const PageTitle = styled.h1`
   font-size: 24px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 `;
 
 export const Grid = styled.div<{ columns?: number; gap?: string }>`

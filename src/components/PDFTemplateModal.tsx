@@ -21,6 +21,8 @@ const ModalContent = styled(Card)`
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 `;
 
 const ModalHeader = styled.div`
@@ -29,12 +31,12 @@ const ModalHeader = styled.div`
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 `;
 
 const ModalTitle = styled.h2`
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
 `;
 
 const CloseButton = styled.button`
@@ -42,7 +44,7 @@ const CloseButton = styled.button`
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary);
   padding: 0;
   width: 30px;
   height: 30px;
@@ -51,7 +53,7 @@ const CloseButton = styled.button`
   justify-content: center;
 
   &:hover {
-    color: #333;
+    color: var(--text-primary);
   }
 `;
 
@@ -68,11 +70,11 @@ const TemplateCard = styled.div<{ selected: boolean }>`
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  background-color: ${props => props.selected ? '#f8f9ff' : '#fff'};
+  background-color: ${props => props.selected ? '#f8f9ff' : 'var(--bg-secondary)'};
 
   &:hover {
     border-color: ${props => props.selected ? '#007bff' : '#ccc'};
-    background-color: ${props => props.selected ? '#f8f9ff' : '#f9f9f9'};
+    background-color: ${props => props.selected ? '#f8f9ff' : 'var(--bg-primary)'};
   }
 `;
 

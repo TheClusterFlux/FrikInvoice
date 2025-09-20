@@ -17,6 +17,7 @@ import { inventoryService, InventoryItem } from '../services/inventoryService';
 import { clientService, Client } from '../services/clientService';
 import { calculateTotalQuantity, detectUnitCategory, convertToBaseUnit, convertToDisplayUnit, formatQuantity } from '../utils/unitConversion';
 import { calculateTaxForItems, getTaxCalculationMethod } from '../utils/taxCalculation';
+import { formatCurrency } from '../utils/currency';
 import logger from '../utils/logger';
 
 const OrderFormContainer = styled.div`
@@ -32,8 +33,8 @@ const OrderForm = styled.form`
 
 const SectionTitle = styled.h3`
   margin-bottom: 16px;
-  color: #333;
-  border-bottom: 2px solid #eee;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
   padding-bottom: 8px;
 `;
 
@@ -49,9 +50,9 @@ const ItemRow = styled.div`
   gap: 16px;
   align-items: end;
   padding: 20px;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: var(--bg-primary);
   margin-bottom: 16px;
 `;
 
@@ -60,6 +61,12 @@ const RemoveButton = styled(Button)`
   color: white;
   padding: 8px 12px;
   font-size: 12px;
+`;
+
+const PriceInput = styled(Input)`
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
 `;
 
 const AddItemButton = styled(Button)`
@@ -82,8 +89,8 @@ const DropdownList = styled.div`
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-top: none;
   border-radius: 0 0 8px 8px;
   max-height: 250px;
@@ -95,11 +102,11 @@ const DropdownList = styled.div`
 const DropdownItem = styled.div`
   padding: 14px 16px;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   transition: background-color 0.2s ease;
   
   &:hover {
-    background-color: #f8f9fa;
+    background-color: var(--bg-primary);
   }
   
   &:last-child {
@@ -109,23 +116,425 @@ const DropdownItem = styled.div`
 
 const ItemCode = styled.div`
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary);
   font-size: 14px;
 `;
 
 const ItemDescription = styled.div`
-  color: #666;
+  color: var(--text-secondary);
   font-size: 12px;
   margin-top: 2px;
 `;
 
 const ItemGroup = styled.div`
-  color: #999;
+  color: var(--text-secondary);
   font-size: 11px;
   margin-top: 2px;
 `;
 
+const ClientDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+`;
+
+const ClientDropdownItem = styled.div`
+  padding: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  
+  &:hover {
+    background-color: var(--bg-primary);
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ClientName = styled.div`
+  font-weight: bold;
+  color: var(--text-primary);
+`;
+
+const ClientDetail = styled.div`
+  font-size: 14px;
+  color: var(--text-secondary);
+`;
+
+const TotalQuantitiesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+`;
+
+const TotalQuantityCard = styled.div`
+  padding: 16px;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+`;
+
+const TotalQuantityTitle = styled.div`
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+`;
+
+const TotalQuantityPlaceholder = styled.div`
+  color: var(--text-secondary);
+  font-style: italic;
+`;
+
+const TaxDescription = styled.div`
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+`;
+
+const PriceInputDisabled = styled(PriceInput)`
+  background-color: var(--bg-primary);
+`;
+
+// Modern Item Card Components
+const ItemCard = styled.div<{ isExpanded: boolean }>`
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  
+  &:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+  }
+`;
+
+
+
+const RemoveItemButton = styled.button`
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #dc3545;
+    color: white;
+  }
+`;
+
+const ItemCardContent = styled.div<{ isExpanded: boolean }>`
+  padding: ${({ isExpanded }) => isExpanded ? '20px' : '0'};
+  max-height: ${({ isExpanded }) => isExpanded ? '1000px' : '0'};
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: ${({ isExpanded }) => isExpanded ? '1' : '0'};
+`;
+
+const ItemSelectionSection = styled.div`
+  margin-bottom: 20px;
+`;
+
+const ItemSelectionLabel = styled.label`
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-size: 14px;
+`;
+
+const SelectedItemInfo = styled.div`
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+`;
+
+const SelectedItemCode = styled.div`
+  font-weight: 600;
+  color: #007bff;
+  font-size: 14px;
+  margin-bottom: 4px;
+`;
+
+const SelectedItemDescription = styled.div`
+  color: var(--text-primary);
+  font-size: 14px;
+  margin-bottom: 4px;
+`;
+
+const SelectedItemGroup = styled.div`
+  color: var(--text-secondary);
+  font-size: 12px;
+`;
+
+const ItemDetailsSection = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+`;
+
+const ItemDetailGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const ItemDetailLabel = styled.label`
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-size: 14px;
+`;
+
+const ModernInput = styled(Input)`
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  padding: 12px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+`;
+
+const ItemUnitDisplay = styled.div`
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+`;
+
+const PriceInputGroup = styled.div`
+  display: flex;
+  align-items: center;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  transition: all 0.2s ease;
+  
+  &:focus-within {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+`;
+
+const CurrencySymbol = styled.span`
+  padding: 12px 8px 12px 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 14px;
+`;
+
+const ModernPriceInput = styled.input`
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 12px 12px 12px 0;
+  font-size: 14px;
+  color: var(--text-primary);
+  text-align: right;
+  font-weight: 600;
+  
+  &:focus {
+    outline: none;
+  }
+  
+  &::placeholder {
+    color: var(--text-secondary);
+  }
+`;
+
+const TotalPriceDisplay = styled.div`
+  padding: 12px;
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+`;
+
+const AddItemCard = styled.button`
+  width: 100%;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  
+  &:hover {
+    border-color: #007bff;
+    background: rgba(0, 123, 255, 0.05);
+  }
+`;
+
+const AddItemIcon = styled.div`
+  font-size: 24px;
+  color: #007bff;
+  font-weight: 300;
+`;
+
+const AddItemText = styled.div`
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 14px;
+`;
+
+// Collapsed Item Summary Component
+const CollapsedItemSummary = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+`;
+
+const CollapsedItemInfo = styled.div`
+  display: flex;
+  gap: 16px;
+  align-items: center;
+`;
+
+const CollapsedItemCode = styled.span`
+  font-weight: 600;
+  color: #007bff;
+`;
+
+const CollapsedItemActions = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+`;
+
+const CollapsedItemTotal = styled.span`
+  font-weight: 600;
+  color: var(--text-primary);
+`;
+
+// Modern Searchable Select Styled Components
+const ModernSearchableSelectContainer = styled.div`
+  position: relative;
+`;
+
+const ModernSearchableInput = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+  
+  &:disabled {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+  }
+  
+  &::placeholder {
+    color: var(--text-secondary);
+  }
+`;
+
+const ModernDropdownList = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 4px;
+`;
+
+const ModernDropdownItem = styled.div`
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background: var(--bg-primary);
+  }
+`;
+
+const ModernItemCode = styled.div`
+  font-weight: 600;
+  color: #007bff;
+  font-size: 14px;
+  margin-bottom: 2px;
+`;
+
+const ModernItemDescription = styled.div`
+  color: var(--text-primary);
+  font-size: 13px;
+  margin-bottom: 2px;
+`;
+
+const ModernItemGroup = styled.div`
+  color: var(--text-secondary);
+  font-size: 11px;
+`;
+
 interface SearchableSelectProps {
+  value: string;
+  onChange: (inventoryId: string) => void;
+  inventoryItems: InventoryItem[];
+  disabled?: boolean;
+  placeholder?: string;
+}
+
+interface ModernSearchableSelectProps {
   value: string;
   onChange: (inventoryId: string) => void;
   inventoryItems: InventoryItem[];
@@ -182,39 +591,131 @@ const ClientSelector: React.FC<ClientSelectorProps> = ({ clients, onClientSelect
       />
       
       {isOpen && filteredClients.length > 0 && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: 0,
-          right: 0,
-          backgroundColor: 'white',
-          border: '1px solid #ddd',
-          borderRadius: '4px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          zIndex: 1000,
-          maxHeight: '200px',
-          overflowY: 'auto'
-        }}>
+        <ClientDropdown>
           {filteredClients.map((client) => (
-            <div
+            <ClientDropdownItem
               key={client._id}
               onClick={() => handleClientSelect(client)}
-              style={{
-                padding: '12px',
-                cursor: 'pointer',
-                borderBottom: '1px solid #eee'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
             >
-              <div style={{ fontWeight: 'bold' }}>{client.name}</div>
-              {client.email && <div style={{ fontSize: '14px', color: '#666' }}>{client.email}</div>}
-              {client.phone && <div style={{ fontSize: '14px', color: '#666' }}>{client.phone}</div>}
-            </div>
+              <ClientName>{client.name}</ClientName>
+              {client.email && <ClientDetail>{client.email}</ClientDetail>}
+              {client.phone && <ClientDetail>{client.phone}</ClientDetail>}
+            </ClientDropdownItem>
           ))}
-        </div>
+        </ClientDropdown>
       )}
     </div>
+  );
+};
+
+// Modern Searchable Select Component
+const ModernSearchableSelect: React.FC<ModernSearchableSelectProps> = ({
+  value,
+  onChange,
+  inventoryItems,
+  disabled = false,
+  placeholder = 'Search by code or description...'
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+
+  // Find selected item when value changes
+  useEffect(() => {
+    if (value) {
+      const item = inventoryItems.find(item => item._id === value);
+      if (item) {
+        setSelectedItem(item);
+        setSearchTerm(`${item.code} - ${item.description}`);
+      }
+    } else {
+      setSelectedItem(null);
+      setSearchTerm('');
+    }
+  }, [value, inventoryItems]);
+
+  // Filter items based on search term
+  const filteredItems = inventoryItems.filter(item => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      item.code.toLowerCase().includes(searchLower) ||
+      item.description.toLowerCase().includes(searchLower) ||
+      item.group.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
+    setIsOpen(true);
+    
+    // Clear selection if no exact match
+    if (selectedItem && !newSearchTerm.includes(selectedItem.code)) {
+      setSelectedItem(null);
+      onChange('');
+    }
+  };
+
+  const handleItemSelect = (item: InventoryItem) => {
+    setSelectedItem(item);
+    setSearchTerm(`${item.code} - ${item.description}`);
+    onChange(item._id);
+    setIsOpen(false);
+  };
+
+  const handleInputFocus = () => {
+    setIsOpen(true);
+  };
+
+  const handleInputBlur = () => {
+    setTimeout(() => setIsOpen(false), 150);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const exactMatch = inventoryItems.find(item => 
+        item.code.toLowerCase() === searchTerm.toLowerCase()
+      );
+      if (exactMatch) {
+        setSelectedItem(exactMatch);
+        onChange(exactMatch._id);
+        setIsOpen(false);
+      }
+    }
+  };
+
+  return (
+    <ModernSearchableSelectContainer>
+      <ModernSearchableInput
+        type="text"
+        value={searchTerm}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        disabled={disabled}
+      />
+      {isOpen && filteredItems.length > 0 && (
+        <ModernDropdownList>
+          {filteredItems.slice(0, 8).map((item) => (
+            <ModernDropdownItem
+              key={item._id}
+              onClick={() => handleItemSelect(item)}
+            >
+              <ModernItemCode>{item.code}</ModernItemCode>
+              <ModernItemDescription>{item.description}</ModernItemDescription>
+              <ModernItemGroup>{item.group}</ModernItemGroup>
+            </ModernDropdownItem>
+          ))}
+          {filteredItems.length > 8 && (
+            <ModernDropdownItem style={{ textAlign: 'center', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+              ... and {filteredItems.length - 8} more items
+            </ModernDropdownItem>
+          )}
+        </ModernDropdownList>
+      )}
+    </ModernSearchableSelectContainer>
   );
 };
 
@@ -491,6 +992,7 @@ const OrderFormPage: React.FC = () => {
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [loading, setLoading] = useState(false);
+  const [expandedItemIndex, setExpandedItemIndex] = useState<number | null>(0); // First item expanded by default
 
   const queryClient = useQueryClient();
 
@@ -639,10 +1141,13 @@ const OrderFormPage: React.FC = () => {
   };
 
   const addItem = () => {
+    const newItemIndex = formData.items.length;
     setFormData({
       ...formData,
       items: [...formData.items, { inventoryId: '', quantity: 1, unitPrice: 0, unit: '' }],
     });
+    // Expand the newly added item
+    setExpandedItemIndex(newItemIndex);
   };
 
   const removeItem = (index: number) => {
@@ -650,6 +1155,16 @@ const OrderFormPage: React.FC = () => {
       ...formData,
       items: formData.items.filter((_, i) => i !== index),
     });
+    
+    // Adjust expanded index if needed
+    if (expandedItemIndex === index) {
+      // If we removed the expanded item, expand the previous one or first one
+      const newExpandedIndex = index > 0 ? index - 1 : (formData.items.length > 1 ? 0 : null);
+      setExpandedItemIndex(newExpandedIndex);
+    } else if (expandedItemIndex !== null && expandedItemIndex > index) {
+      // If we removed an item before the expanded one, adjust the index
+      setExpandedItemIndex(expandedItemIndex - 1);
+    }
   };
 
   const updateItem = (index: number, field: keyof (typeof formData.items)[0], value: any) => {
@@ -723,6 +1238,27 @@ const OrderFormPage: React.FC = () => {
     
     const calculation = calculateTaxForItems(items, taxMethod);
     return calculation.total;
+  };
+
+  // Helper function to calculate individual item's total quantity with unit conversion
+  const getItemTotalQuantity = (item: any, inventoryItem: any) => {
+    if (!inventoryItem || !item.quantity) return null;
+    
+    const itemsWithUnits = [{
+      inventoryId: item.inventoryId,
+      quantity: item.quantity,
+      unit: item.unit || inventoryItem.unit || 'units',
+      description: inventoryItem.description || 'Unknown Item'
+    }];
+    
+    const totals = calculateTotalQuantity(itemsWithUnits);
+    const itemTotal = totals[item.inventoryId];
+    
+    if (itemTotal) {
+      return `${item.quantity}X ${item.unit || inventoryItem.unit || 'units'} : ${itemTotal.formattedTotal} ${itemTotal.displayUnit}`;
+    }
+    
+    return `${item.quantity} ${item.unit || inventoryItem.unit || 'units'}`;
   };
 
   // Real-time validation functions
@@ -959,7 +1495,7 @@ const OrderFormPage: React.FC = () => {
 
   return (
     <OrderFormContainer>
-      <h1>{isEditing ? 'Edit Order' : 'Create New Order'}</h1>
+      <h1>{isEditing ? 'Edit order' : 'Create new order'}</h1>
       
       <OrderForm onSubmit={handleSubmit}>
         <Card>
@@ -1104,148 +1640,140 @@ const OrderFormPage: React.FC = () => {
           <SectionTitle>Order Items</SectionTitle>
           <ItemsContainer>
             {formData.items.map((item, index) => {
+              const selectedInventoryItem = inventoryData?.data.find(inv => inv._id === item.inventoryId);
+              const isExpanded = expandedItemIndex === index;
+              
               return (
-                <ItemRow key={index}>
-                  <div>
-                    <Label>Item</Label>
-                    <SearchableSelect
-                      value={item.inventoryId}
-                      onChange={(inventoryId) => {
-                        logger.debug('OrderForm', 'SearchableSelect onChange called', {
-                          inventoryId,
-                          index,
-                          currentInventoryId: item.inventoryId
-                        });
-                        
-                        // Find the selected item to get the unit
-                        const selectedItem = inventoryData?.data.find(inv => inv._id === inventoryId);
-                        logger.debug('OrderForm', 'Looking for selected item to set unit', {
-                          inventoryId,
-                          found: !!selectedItem,
-                          selectedItem: selectedItem ? {
-                            id: selectedItem._id,
-                            code: selectedItem.code,
-                            unit: selectedItem.unit
-                          } : null
-                        });
-                        
-                        // Update both inventoryId and unit in a single operation
-                        const newItems = [...formData.items];
-                        newItems[index] = { 
-                          ...newItems[index], 
-                          inventoryId: inventoryId,
-                          unit: selectedItem?.unit || ''
-                        };
-                        setFormData({ ...formData, items: newItems });
-                        
-                        logger.debug('OrderForm', 'Combined update completed', {
-                          index,
-                          updatedItem: newItems[index]
-                        });
-                      }}
-                      inventoryItems={inventoryData?.data || []}
-                      disabled={inventoryLoading}
-                      placeholder={inventoryLoading ? 'Loading items...' : 
-                                   inventoryError ? 'Error loading items' : 
-                                   'Type code or description...'}
-                    />
-                  </div>
-                  <div>
-                    <Label>Quantity</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label>Unit</Label>
-                    <div style={{ 
-                      padding: '8px 12px', 
-                      backgroundColor: '#f8f9fa', 
-                      border: '1px solid #ddd', 
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      color: '#666'
-                    }}>
-                      {item.unit || 'Select item first'}
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Unit Price</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={item.unitPrice || 0}
-                      onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label>Total</Label>
-                    <Input
-                      type="text"
-                      value={`$${((item.unitPrice || 0) * item.quantity).toFixed(2)}`}
-                      disabled
-                    />
-                  </div>
-                  <RemoveButton type="button" onClick={() => removeItem(index)}>
-                    Remove
-                  </RemoveButton>
-                </ItemRow>
+                <ItemCard 
+                  key={index} 
+                  isExpanded={isExpanded}
+                  onClick={() => setExpandedItemIndex(isExpanded ? null : index)}
+                >
+                  {!isExpanded && selectedInventoryItem && (
+                    <CollapsedItemSummary>
+                      <CollapsedItemInfo>
+                        <CollapsedItemCode>{selectedInventoryItem.code}</CollapsedItemCode>
+                        <span>{selectedInventoryItem.description}</span>
+                        <span>Qty: {getItemTotalQuantity(item, selectedInventoryItem) || `${item.quantity} ${item.unit || 'units'}`}</span>
+                      </CollapsedItemInfo>
+                      <CollapsedItemActions>
+                        <CollapsedItemTotal>
+                          {formatCurrency((item.unitPrice || 0) * item.quantity)}
+                        </CollapsedItemTotal>
+                        <RemoveItemButton 
+                          type="button" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeItem(index);
+                          }}
+                        >
+                          ✕
+                        </RemoveItemButton>
+                      </CollapsedItemActions>
+                    </CollapsedItemSummary>
+                  )}
+                  
+                  <ItemCardContent isExpanded={isExpanded} onClick={(e) => e.stopPropagation()}>
+                    <ItemSelectionSection>
+                      <ItemSelectionLabel>Select Item</ItemSelectionLabel>
+                      <ModernSearchableSelect
+                        value={item.inventoryId}
+                        onChange={(inventoryId) => {
+                          logger.debug('OrderForm', 'SearchableSelect onChange called', {
+                            inventoryId,
+                            index,
+                            currentInventoryId: item.inventoryId
+                          });
+                          
+                          // Find the selected item to get the unit
+                          const selectedItem = inventoryData?.data.find(inv => inv._id === inventoryId);
+                          logger.debug('OrderForm', 'Looking for selected item to set unit', {
+                            inventoryId,
+                            found: !!selectedItem,
+                            selectedItem: selectedItem ? {
+                              id: selectedItem._id,
+                              code: selectedItem.code,
+                              unit: selectedItem.unit
+                            } : null
+                          });
+                          
+                          // Update both inventoryId and unit in a single operation
+                          const newItems = [...formData.items];
+                          newItems[index] = { 
+                            ...newItems[index], 
+                            inventoryId: inventoryId,
+                            unit: selectedItem?.unit || ''
+                          };
+                          setFormData({ ...formData, items: newItems });
+                          
+                          logger.debug('OrderForm', 'Combined update completed', {
+                            index,
+                            updatedItem: newItems[index]
+                          });
+                        }}
+                        inventoryItems={inventoryData?.data || []}
+                        disabled={inventoryLoading}
+                        placeholder={inventoryLoading ? 'Loading items...' : 
+                                     inventoryError ? 'Error loading items' : 
+                                     'Search by code or description...'}
+                      />
+                      {selectedInventoryItem && (
+                        <SelectedItemInfo>
+                          <SelectedItemCode>{selectedInventoryItem.code}</SelectedItemCode>
+                          <SelectedItemDescription>{selectedInventoryItem.description}</SelectedItemDescription>
+                          <SelectedItemGroup>Group: {selectedInventoryItem.group}</SelectedItemGroup>
+                        </SelectedItemInfo>
+                      )}
+                    </ItemSelectionSection>
+
+                    <ItemDetailsSection>
+                      <ItemDetailGroup>
+                        <ItemDetailLabel>Quantity</ItemDetailLabel>
+                        <ModernInput
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
+                          required
+                          placeholder="1"
+                        />
+                        <ItemUnitDisplay>{item.unit || 'units'}</ItemUnitDisplay>
+                      </ItemDetailGroup>
+
+                      <ItemDetailGroup>
+                        <ItemDetailLabel>Unit Price</ItemDetailLabel>
+                        <PriceInputGroup>
+                          <CurrencySymbol>R</CurrencySymbol>
+                          <ModernPriceInput
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={item.unitPrice || 0}
+                            onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                            required
+                            placeholder="0.00"
+                          />
+                        </PriceInputGroup>
+                      </ItemDetailGroup>
+
+                      <ItemDetailGroup>
+                        <ItemDetailLabel>Total</ItemDetailLabel>
+                        <TotalPriceDisplay>
+                          {formatCurrency((item.unitPrice || 0) * item.quantity)}
+                        </TotalPriceDisplay>
+                      </ItemDetailGroup>
+                    </ItemDetailsSection>
+                  </ItemCardContent>
+                </ItemCard>
               );
             })}
-            <AddItemButton type="button" onClick={addItem}>
-              Add Item
-            </AddItemButton>
+            <AddItemCard type="button" onClick={addItem}>
+              <AddItemIcon>+</AddItemIcon>
+              <AddItemText>Add new item</AddItemText>
+            </AddItemCard>
           </ItemsContainer>
         </Card>
 
-        {/* Total Quantities Summary */}
-        {formData.items.length > 0 && (
-          <Card>
-            <SectionTitle>Total Quantities</SectionTitle>
-            {(() => {
-              const itemsWithUnits = formData.items
-                .filter(item => item.inventoryId && item.quantity)
-                .map(item => {
-                  const inventoryItem = inventoryData?.data.find(inv => inv._id === item.inventoryId);
-                  return {
-                    inventoryId: item.inventoryId,
-                    quantity: item.quantity,
-                    unit: item.unit || inventoryItem?.unit || 'units',
-                    description: inventoryItem?.description || 'Unknown Item'
-                  };
-                });
-              
-              const totals = calculateTotalQuantity(itemsWithUnits);
-              
-              return Object.keys(totals).length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-                  {Object.values(totals).map((item) => (
-                    <div key={item.inventoryId} style={{ 
-                      padding: '16px', 
-                      backgroundColor: '#f8f9fa', 
-                      borderRadius: '8px',
-                      border: '1px solid #e9ecef'
-                    }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '8px' }}>
-                        {item.description.split(' ').slice(0, 2).join(' ')}: {item.formattedTotal} {item.displayUnit}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ color: '#666', fontStyle: 'italic' }}>
-                  Select items and quantities to see total calculations
-                </div>
-              );
-            })()}
-          </Card>
-        )}
 
         <Card>
           <SectionTitle>Order Summary</SectionTitle>
@@ -1262,9 +1790,9 @@ const OrderFormPage: React.FC = () => {
                   setFormData({ ...formData, taxRate: parseFloat(e.target.value) || 0 })
                 }
               />
-              <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+              <TaxDescription>
                 Tax is calculated as included in the price (reverse calculation)
-              </div>
+              </TaxDescription>
               {validateTaxRate(formData.taxRate) && (
                 <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
                   {validateTaxRate(formData.taxRate)}
@@ -1274,15 +1802,15 @@ const OrderFormPage: React.FC = () => {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span>Subtotal:</span>
-                <span>${calculateSubtotal().toFixed(2)}</span>
+                <span>{formatCurrency(calculateSubtotal())}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span>Tax:</span>
-                <span>${calculateTax().toFixed(2)}</span>
+                <span>{formatCurrency(calculateTax())}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '18px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
                 <span>Total:</span>
-                <span>${calculateTotal().toFixed(2)}</span>
+                <span>{formatCurrency(calculateTotal())}</span>
               </div>
             </div>
           </Grid>

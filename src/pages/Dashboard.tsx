@@ -7,6 +7,7 @@ import { orderService } from '../services/orderService';
 import { inventoryService } from '../services/inventoryService';
 import { clientService } from '../services/clientService';
 import { useAuth } from '../contexts/AuthContext';
+import { formatCurrency } from '../utils/currency';
 import logger from '../utils/logger';
 
 const DashboardContainer = styled.div`
@@ -21,6 +22,8 @@ const StatCard = styled(Card)`
   overflow: hidden;
   cursor: pointer;
   transition: all 0.2s ease;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   
   &::before {
     content: '';
@@ -47,7 +50,7 @@ const StatNumber = styled.div`
 
 const StatLabel = styled.div`
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -71,6 +74,8 @@ const ActionCard = styled(Card)`
   transition: all 0.2s ease;
   border: 2px solid transparent;
   cursor: pointer;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 
   &:hover {
     transform: translateY(-2px);
@@ -86,12 +91,12 @@ const ActionIcon = styled.div`
 
 const ActionTitle = styled.h3`
   margin-bottom: 8px;
-  color: #333;
+  color: var(--text-primary);
   font-size: 18px;
 `;
 
 const ActionDescription = styled.p`
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 20px;
   font-size: 14px;
   line-height: 1.4;
@@ -99,11 +104,13 @@ const ActionDescription = styled.p`
 
 const RecentActivity = styled(Card)`
   padding: 24px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 `;
 
 const ActivityTitle = styled.h2`
   margin: 0 0 20px 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 20px;
 `;
 
@@ -111,7 +118,7 @@ const ActivityItem = styled.div`
   display: flex;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
   
@@ -120,7 +127,7 @@ const ActivityItem = styled.div`
   }
 
   &:hover {
-    background-color: #f8f9fa;
+    background-color: var(--bg-primary);
     padding-left: 8px;
     padding-right: 8px;
     margin-left: -8px;
@@ -142,13 +149,13 @@ const ActivityContent = styled.div`
 
 const ActivityText = styled.div`
   font-size: 14px;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 2px;
 `;
 
 const ActivityTime = styled.div`
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
 `;
 
 const WelcomeSection = styled.div<{ show: boolean }>`
@@ -301,7 +308,7 @@ const Dashboard: React.FC = () => {
   return (
     <DashboardContainer>
       <WelcomeSection show={showWelcome}>
-        <WelcomeTitle>Welcome back, {user?.username}!</WelcomeTitle>
+        <WelcomeTitle>Welcome back, {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1).toLowerCase() : 'User'}!</WelcomeTitle>
         <WelcomeSubtitle>
           {user?.role === 'admin' 
             ? 'Manage your invoice system and oversee all operations'
@@ -320,13 +327,13 @@ const Dashboard: React.FC = () => {
         <StatCard onClick={() => handleStatCardClick('/orders')}>
           <StatIcon>📊</StatIcon>
           <StatNumber>{totalOrders}</StatNumber>
-          <StatLabel>Total Orders</StatLabel>
+          <StatLabel>Total orders</StatLabel>
         </StatCard>
         
         <StatCard onClick={() => handleStatCardClick('/inventory')}>
           <StatIcon>📦</StatIcon>
           <StatNumber>{totalInventory}</StatNumber>
-          <StatLabel>Inventory Items</StatLabel>
+          <StatLabel>Inventory items</StatLabel>
         </StatCard>
         
         <StatCard onClick={() => handleStatCardClick('/clients')}>
@@ -338,14 +345,14 @@ const Dashboard: React.FC = () => {
         <StatCard onClick={() => handleStatCardClick('/orders', 'status=pending')}>
           <StatIcon>⏳</StatIcon>
           <StatNumber>{pendingOrders}</StatNumber>
-          <StatLabel>Pending Orders</StatLabel>
+          <StatLabel>Pending orders</StatLabel>
         </StatCard>
       </StatsGrid>
 
       <QuickActions>
         <ActionCard as={Link} to="/orders/new">
           <ActionIcon>➕</ActionIcon>
-          <ActionTitle>Create New Order</ActionTitle>
+          <ActionTitle>Create new order</ActionTitle>
           <ActionDescription>
             Start a new invoice order for a customer
           </ActionDescription>
@@ -354,7 +361,7 @@ const Dashboard: React.FC = () => {
         {user?.role === 'admin' && (
           <ActionCard as={Link} to="/users">
             <ActionIcon>👤</ActionIcon>
-            <ActionTitle>User Management</ActionTitle>
+            <ActionTitle>User management</ActionTitle>
             <ActionDescription>
               Manage system users and permissions
             </ActionDescription>
@@ -363,7 +370,7 @@ const Dashboard: React.FC = () => {
       </QuickActions>
 
       <RecentActivity>
-        <ActivityTitle>Recent Orders</ActivityTitle>
+        <ActivityTitle>Recent orders</ActivityTitle>
         {recentOrders.length > 0 ? (
           recentOrders.map((order) => (
             <ActivityItem key={order._id} onClick={() => handleOrderClick(order._id)}>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
@@ -11,6 +12,7 @@ import Users from './pages/Users';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
 import PasswordChangeModal from './components/PasswordChangeModal';
+import { GlobalStyles } from './styles/GlobalStyles';
 
 const App: React.FC = () => {
   const { user, loading } = useAuth();
@@ -43,7 +45,8 @@ const App: React.FC = () => {
   }
 
   return (
-    <>
+    <ThemeProvider>
+      <GlobalStyles />
       {showPasswordChange && (
         <PasswordChangeModal onSuccess={handlePasswordChangeSuccess} />
       )}
@@ -59,8 +62,9 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
-    </>
+    </ThemeProvider>
   );
 };
 
 export default App;
+

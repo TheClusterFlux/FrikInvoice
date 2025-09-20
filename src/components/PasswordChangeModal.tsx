@@ -17,17 +17,18 @@ const PasswordChangeContainer = styled.div`
 `;
 
 const PasswordChangeModalContent = styled.div`
-  background: white;
+  background: var(--bg-secondary);
   padding: 32px;
   border-radius: 12px;
   width: 90%;
   max-width: 400px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
 `;
 
 const Title = styled.h2`
   margin: 0 0 24px 0;
-  color: #333;
+  color: var(--text-primary);
   text-align: center;
 `;
 
@@ -45,14 +46,16 @@ const FormGroup = styled.div`
 
 const Label = styled.label`
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 `;
 
 const Input = styled.input`
   padding: 12px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border-color);
   border-radius: 6px;
   font-size: 16px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   transition: border-color 0.2s ease;
 
   &:focus {
@@ -93,7 +96,7 @@ const Button = styled.button`
 `;
 
 const InfoText = styled.p`
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   text-align: center;
   margin: 0 0 20px 0;

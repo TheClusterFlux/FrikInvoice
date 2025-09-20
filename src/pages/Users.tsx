@@ -33,11 +33,70 @@ const FilterGroup = styled.div`
 
 const UsersTable = styled(Table)`
   margin-bottom: 20px;
+  table-layout: fixed;
+  width: 100%;
+`;
+
+const UsernameColumn = styled.td`
+  width: 20%;
+  word-break: break-word;
+`;
+
+const RoleColumn = styled.td`
+  width: 15%;
+  word-break: break-word;
+`;
+
+const StatusColumn = styled.td`
+  width: 15%;
+  word-break: break-word;
+`;
+
+const LastLoginColumn = styled.td`
+  width: 20%;
+  word-break: break-word;
+`;
+
+const CreatedColumn = styled.td`
+  width: 20%;
+  word-break: break-word;
+`;
+
+const ActionsColumn = styled.td`
+  width: 10%;
+  text-align: right;
+  padding-right: 16px;
+`;
+
+const UsernameHeader = styled.th`
+  width: 20%;
+`;
+
+const RoleHeader = styled.th`
+  width: 15%;
+`;
+
+const StatusHeader = styled.th`
+  width: 15%;
+`;
+
+const LastLoginHeader = styled.th`
+  width: 20%;
+`;
+
+const CreatedHeader = styled.th`
+  width: 20%;
+`;
+
+const ActionsHeader = styled.th`
+  width: 10%;
+  text-align: right;
 `;
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
 `;
 
 const SuccessMessage = styled.div`
@@ -137,13 +196,14 @@ const Modal = styled.div<{ isOpen: boolean }>`
 `;
 
 const ModalContent = styled.div`
-  background: white;
+  background: var(--bg-secondary);
   padding: 24px;
   border-radius: 8px;
   width: 90%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  color: var(--text-primary);
 `;
 
 const ModalHeader = styled.div`
@@ -155,7 +215,7 @@ const ModalHeader = styled.div`
 
 const ModalTitle = styled.h2`
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
 `;
 
 const CloseButton = styled.button`
@@ -163,10 +223,10 @@ const CloseButton = styled.button`
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary);
   
   &:hover {
-    color: #333;
+    color: var(--text-primary);
   }
 `;
 
@@ -184,7 +244,7 @@ const FormGroup = styled.div`
 
 const Label = styled.label`
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 `;
 
 const ButtonGroup = styled.div`
@@ -201,6 +261,14 @@ const RoleBadge = styled.span<{ role: string }>`
   font-weight: 500;
   background-color: ${props => props.role === 'admin' ? '#cce5ff' : '#e6f3ff'};
   color: ${props => props.role === 'admin' ? '#0066cc' : '#004499'};
+  border: 1px solid ${props => props.role === 'admin' ? '#99d1ff' : '#b3d9ff'};
+
+  /* Dark mode overrides */
+  [data-theme="dark"] & {
+    background-color: ${props => props.role === 'admin' ? '#1a3d5c' : '#0d2a3d'};
+    color: ${props => props.role === 'admin' ? '#66b3ff' : '#4da6ff'};
+    border-color: ${props => props.role === 'admin' ? '#2d5a7a' : '#1a3d5c'};
+  }
 `;
 
 const Users: React.FC = () => {
@@ -417,10 +485,10 @@ const Users: React.FC = () => {
   return (
     <UsersContainer>
       <PageHeader>
-        <PageTitle>User Management</PageTitle>
+        <PageTitle>User management</PageTitle>
         {user?.role === 'admin' && (
           <Button onClick={() => setIsCreateModalOpen(true)}>
-            Create User
+            Create user
           </Button>
         )}
       </PageHeader>
@@ -431,12 +499,12 @@ const Users: React.FC = () => {
         variant={alternatingRows ? 'primary' : 'secondary'}
         onClick={() => setAlternatingRows(!alternatingRows)}
       >
-        {alternatingRows ? 'Disable' : 'Enable'} Alternating Row Colors
+        {alternatingRows ? 'Disable' : 'Enable'} alternating row colors
       </ToggleButton>
 
       <FiltersContainer>
         <FilterGroup>
-          <FilterLabel>Search:</FilterLabel>
+          <FilterLabel>Search</FilterLabel>
           <Input
             type="text"
             placeholder="Search users..."
@@ -460,34 +528,34 @@ const Users: React.FC = () => {
       <UsersTable>
         <thead>
           <tr>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Last Login</th>
-            <th>Created</th>
-            {user?.role === 'admin' && <th>Actions</th>}
+            <UsernameHeader>Username</UsernameHeader>
+            <RoleHeader>Role</RoleHeader>
+            <StatusHeader>Status</StatusHeader>
+            <LastLoginHeader>Last Login</LastLoginHeader>
+            <CreatedHeader>Created</CreatedHeader>
+            {user?.role === 'admin' && <ActionsHeader>Actions</ActionsHeader>}
           </tr>
         </thead>
         <tbody>
           {usersData?.data.map((userItem, index) => (
             <TableRow key={userItem._id} alternating={alternatingRows} index={index}>
-              <td><strong>{userItem.username}</strong></td>
-              <td>
+              <UsernameColumn><strong>{userItem.username}</strong></UsernameColumn>
+              <RoleColumn>
                 <RoleBadge role={userItem.role}>
                   {userItem.role.toUpperCase()}
                 </RoleBadge>
-              </td>
-              <td>
+              </RoleColumn>
+              <StatusColumn>
                 <StatusBadge status={userItem.isActive ? 'active' : 'inactive'}>
                   {userItem.isActive ? 'Active' : 'Inactive'}
                 </StatusBadge>
-              </td>
-              <td>
+              </StatusColumn>
+              <LastLoginColumn>
                 {userItem.lastLogin ? formatDate(userItem.lastLogin) : 'Never'}
-              </td>
-              <td>{formatDate(userItem.createdAt)}</td>
+              </LastLoginColumn>
+              <CreatedColumn>{formatDate(userItem.createdAt)}</CreatedColumn>
               {user?.role === 'admin' && (
-                <td>
+                <ActionsColumn>
                   <ActionButtons>
                     <Button 
                       variant="secondary" 
@@ -501,7 +569,7 @@ const Users: React.FC = () => {
                       onClick={() => handleResetPassword(userItem)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      Reset Password
+                      Reset password
                     </Button>
                     <Button 
                       variant="danger" 
@@ -511,7 +579,7 @@ const Users: React.FC = () => {
                       Delete
                     </Button>
                   </ActionButtons>
-                </td>
+                </ActionsColumn>
               )}
             </TableRow>
           ))}
@@ -612,7 +680,7 @@ const Users: React.FC = () => {
       <Modal isOpen={isEditModalOpen}>
         <ModalContent>
           <ModalHeader>
-            <ModalTitle>Edit User</ModalTitle>
+            <ModalTitle>Edit user</ModalTitle>
             <CloseButton onClick={() => setIsEditModalOpen(false)}>
               ×
             </CloseButton>
@@ -678,7 +746,7 @@ const Users: React.FC = () => {
       <Modal isOpen={isPasswordModalOpen}>
         <ModalContent>
           <ModalHeader>
-            <ModalTitle>Reset Password</ModalTitle>
+            <ModalTitle>Reset password</ModalTitle>
             <CloseButton onClick={() => setIsPasswordModalOpen(false)}>
               ×
             </CloseButton>
@@ -711,7 +779,7 @@ const Users: React.FC = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={resetPasswordMutation.isLoading}>
-                {resetPasswordMutation.isLoading ? 'Resetting...' : 'Reset Password'}
+                {resetPasswordMutation.isLoading ? 'Resetting...' : 'Reset password'}
               </Button>
             </ButtonGroup>
           </Form>
@@ -722,19 +790,19 @@ const Users: React.FC = () => {
       {showDeleteConfirm && (
         <ConfirmationModal>
           <ConfirmationDialog>
-            <h3>Confirm Delete</h3>
+            <h3>Confirm delete</h3>
             <p>Are you sure you want to delete the user <strong>{showDeleteConfirm.username}</strong>?</p>
-            <p style={{ color: '#666', fontSize: '14px' }}>This action cannot be undone.</p>
+            <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>This action cannot be undone.</p>
             <ConfirmationButtons>
               <Button variant="secondary" onClick={() => setShowDeleteConfirm(null)}>
-                Cancel
+                No
               </Button>
               <Button 
                 variant="danger" 
                 onClick={() => deleteMutation.mutate(showDeleteConfirm._id)}
                 disabled={deleteMutation.isLoading}
               >
-                {deleteMutation.isLoading ? 'Deleting...' : 'Delete'}
+                {deleteMutation.isLoading ? 'Deleting...' : 'Yes, delete'}
               </Button>
             </ConfirmationButtons>
           </ConfirmationDialog>

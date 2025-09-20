@@ -12,6 +12,7 @@ import {
 } from '../styles/GlobalStyles';
 import { inventoryService, InventoryItem, CreateInventoryData } from '../services/inventoryService';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const InventoryContainer = styled.div`
   max-width: 1200px;
@@ -31,11 +32,61 @@ const FilterGroup = styled.div`
 
 const InventoryTable = styled(Table)`
   margin-bottom: 20px;
+  table-layout: fixed;
+  width: 100%;
+`;
+
+const CodeColumn = styled.td`
+  width: 10%;
+  word-break: break-word;
+`;
+
+const DescriptionColumn = styled.td`
+  width: 55%;
+  word-break: break-word;
+`;
+
+const GroupColumn = styled.td`
+  width: 15%;
+  word-break: break-word;
+`;
+
+const UnitColumn = styled.td`
+  width: 10%;
+  word-break: break-word;
+`;
+
+const ActionsColumn = styled.td`
+  width: 10%;
+  text-align: right;
+  padding-right: 16px;
+`;
+
+const CodeHeader = styled.th`
+  width: 10%;
+`;
+
+const DescriptionHeader = styled.th`
+  width: 55%;
+`;
+
+const GroupHeader = styled.th`
+  width: 15%;
+`;
+
+const UnitHeader = styled.th`
+  width: 10%;
+`;
+
+const ActionsHeader = styled.th`
+  width: 10%;
+  text-align: right;
 `;
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
 `;
 
 const FilterLabel = styled.label`
@@ -50,13 +101,13 @@ const SortableHeader = styled.th<{ sortable?: boolean }>`
   position: relative;
   
   &:hover {
-    background-color: ${({ sortable }) => sortable ? '#e9ecef' : 'inherit'};
+    background-color: ${({ sortable }) => sortable ? 'var(--bg-primary)' : 'inherit'};
   }
   
   &::after {
     content: '';
     position: absolute;
-    right: 8px;
+    right: 0px;
     top: 50%;
     transform: translateY(-50%);
     width: 0;
@@ -67,19 +118,19 @@ const SortableHeader = styled.th<{ sortable?: boolean }>`
   }
   
   &.asc::after {
-    border-bottom: 6px solid #666;
+    border-bottom: 6px solid var(--text-secondary);
     opacity: 1;
   }
   
   &.desc::after {
-    border-top: 6px solid #666;
+    border-top: 6px solid var(--text-secondary);
     opacity: 1;
   }
 `;
 
 const TableRow = styled.tr<{ alternating?: boolean; index?: number }>`
   background-color: ${({ alternating, index }) => 
-    alternating && index !== undefined && index % 2 === 1 ? '#f8f9fa' : 'white'};
+    alternating && index !== undefined && index % 2 === 1 ? 'var(--bg-primary)' : 'var(--bg-secondary)'};
 `;
 
 const ToggleButton = styled(Button)`
@@ -140,8 +191,69 @@ const PaginationContainer = styled.div`
   align-items: center;
 `;
 
+const ImportModal = styled(Card)`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  min-width: 500px;
+`;
+
+const ImportInstructions = styled.div`
+  margin-bottom: 20px;
+`;
+
+const ImportInstructionsList = styled.ul`
+  font-size: 14px;
+  color: var(--text-secondary);
+`;
+
+const ImportFileInput = styled.input`
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+`;
+
+const ImportFileInfo = styled.div`
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+`;
+
+const ImportResults = styled.div`
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: var(--bg-primary);
+  border-radius: 4px;
+`;
+
+const ImportErrorDetails = styled.div`
+  margin-top: 10px;
+`;
+
+const ImportErrorList = styled.ul`
+  font-size: 12px;
+  max-height: 100px;
+  overflow-y: auto;
+`;
+
+const ImportButtonContainer = styled.div`
+  display: flex;
+  gap: 12px;
+`;
+
+const PaginationInfo = styled.span`
+  display: flex;
+  align-items: center;
+`;
+
 const Inventory: React.FC = () => {
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [group, setGroup] = useState('');
@@ -169,16 +281,17 @@ const Inventory: React.FC = () => {
     }>;
   } | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<InventoryItem | null>(null);
-  const [sortField, setSortField] = useState<string>('');
+  const [sortField, setSortField] = useState<string>('description'); // Default sort by description
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [alternatingRows, setAlternatingRows] = useState(false);
   const [availableGroups, setAvailableGroups] = useState<string[]>([]);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Reduced default items per page
 
   const queryClient = useQueryClient();
 
   const { data: inventoryData, isLoading, error } = useQuery(
-    ['inventory', page, search, group, sortField, sortDirection],
-    () => inventoryService.getInventory({ page, limit: 20, search, group, sortField, sortDirection }),
+    ['inventory', page, search, group, sortField, sortDirection, itemsPerPage],
+    () => inventoryService.getInventory({ page, limit: itemsPerPage, search, group, sortField, sortDirection }),
     { keepPreviousData: true }
   );
 
@@ -186,15 +299,53 @@ const Inventory: React.FC = () => {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await inventoryService.getInventory({ limit: 1000 });
-        const groups = Array.from(new Set(response.data.map(item => item.group))).sort();
+        // Use the same search parameters as the main query to get consistent results
+        const response = await inventoryService.getInventory({ 
+          limit: 1000, 
+          search, 
+          sortField, 
+          sortDirection 
+        });
+        
+        // Get groups from the search results (backend already filtered by search term)
+        const groups = Array.from(new Set(response.data.map(item => item.group)))
+          .sort((a, b) => {
+            // Sort numerically if both are numbers, otherwise alphabetically
+            const aNum = parseFloat(a);
+            const bNum = parseFloat(b);
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+              return aNum - bNum;
+            }
+            return a.localeCompare(b);
+          });
         setAvailableGroups(groups);
       } catch (error) {
         console.error('Failed to fetch groups:', error);
       }
     };
     fetchGroups();
-  }, []);
+  }, [search, sortField, sortDirection]);
+
+  // Clear group filter if it's no longer valid for current search
+  useEffect(() => {
+    if (group && !availableGroups.includes(group)) {
+      setGroup('');
+    }
+  }, [availableGroups, group]);
+
+  // Function to highlight search terms
+  const highlightSearchTerm = (text: string, searchTerm: string) => {
+    if (!searchTerm) return text;
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    return text.split(regex).map((part, index) => 
+      regex.test(part) ? <mark key={index} style={{ 
+        backgroundColor: isDark ? '#ffd700' : '#ffeb3b', 
+        color: isDark ? '#000000' : '#000000',
+        padding: '2px 4px',
+        borderRadius: '2px'
+      }}>{part}</mark> : part
+    );
+  };
 
   const createMutation = useMutation(inventoryService.createInventory, {
     onSuccess: () => {
@@ -386,12 +537,12 @@ const Inventory: React.FC = () => {
   return (
     <InventoryContainer>
       <PageHeader>
-        <PageTitle>Inventory Management</PageTitle>
+        <PageTitle>Inventory management</PageTitle>
         <div style={{ display: 'flex', gap: '12px' }}>
           <Button onClick={exportCSV}>Export CSV</Button>
           <Button onClick={() => setShowImportModal(true)}>Import CSV</Button>
           {user?.role === 'admin' && (
-            <Button onClick={() => setShowForm(true)}>Add New Item</Button>
+            <Button onClick={() => setShowForm(true)}>Add new item</Button>
           )}
         </div>
       </PageHeader>
@@ -402,12 +553,12 @@ const Inventory: React.FC = () => {
         variant={alternatingRows ? 'primary' : 'secondary'}
         onClick={() => setAlternatingRows(!alternatingRows)}
       >
-        {alternatingRows ? 'Disable' : 'Enable'} Alternating Row Colors
+        {alternatingRows ? 'Disable' : 'Enable'} Alternating row colors
       </ToggleButton>
 
       <FiltersContainer>
         <FilterGroup>
-          <FilterLabel>Search:</FilterLabel>
+          <FilterLabel>Search</FilterLabel>
           <Input
             type="text"
             placeholder="Search items..."
@@ -416,7 +567,7 @@ const Inventory: React.FC = () => {
           />
         </FilterGroup>
         <FilterGroup>
-          <FilterLabel>Group:</FilterLabel>
+          <FilterLabel>Group</FilterLabel>
           <Select
             value={group}
             onChange={(e) => setGroup(e.target.value)}
@@ -427,13 +578,25 @@ const Inventory: React.FC = () => {
             ))}
           </Select>
         </FilterGroup>
+        <FilterGroup>
+          <FilterLabel>Items per page</FilterLabel>
+          <Select
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </Select>
+        </FilterGroup>
       </FiltersContainer>
 
       {showForm && user?.role === 'admin' && (
         <Card>
-          <h3>{editingItem ? 'Edit Item' : 'Add New Item'}</h3>
+          <h3>{editingItem ? 'Edit item' : 'Add new item'}</h3>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
               <div>
                 <label>Code *</label>
                 <Input
@@ -483,7 +646,7 @@ const Inventory: React.FC = () => {
             )}
             <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
               <Button type="submit" disabled={createMutation.isLoading || updateMutation.isLoading}>
-                {editingItem ? 'Update Item' : 'Add Item'}
+                {editingItem ? 'Update item' : 'Add item'}
               </Button>
               <Button 
                 type="button" 
@@ -504,34 +667,42 @@ const Inventory: React.FC = () => {
       <InventoryTable>
         <thead>
           <tr>
-            <SortableHeader sortable onClick={() => handleSort('code')} className={getSortClass('code')}>
-              Code
-            </SortableHeader>
-            <SortableHeader sortable onClick={() => handleSort('description')} className={getSortClass('description')}>
-              Description
-            </SortableHeader>
-            <SortableHeader sortable onClick={() => handleSort('group')} className={getSortClass('group')}>
-              Group
-            </SortableHeader>
-            <SortableHeader sortable onClick={() => handleSort('unit')} className={getSortClass('unit')}>
-              Unit
-            </SortableHeader>
-            {user?.role === 'admin' && <th>Actions</th>}
+            <CodeHeader>
+              <SortableHeader sortable onClick={() => handleSort('code')} className={getSortClass('code')}>
+                Code
+              </SortableHeader>
+            </CodeHeader>
+            <DescriptionHeader>
+              <SortableHeader sortable onClick={() => handleSort('description')} className={getSortClass('description')}>
+                Description
+              </SortableHeader>
+            </DescriptionHeader>
+            <GroupHeader>
+              <SortableHeader sortable onClick={() => handleSort('group')} className={getSortClass('group')}>
+                Group
+              </SortableHeader>
+            </GroupHeader>
+            <UnitHeader>
+              <SortableHeader sortable onClick={() => handleSort('unit')} className={getSortClass('unit')}>
+                Unit
+              </SortableHeader>
+            </UnitHeader>
+            {user?.role === 'admin' && <ActionsHeader>Actions</ActionsHeader>}
           </tr>
         </thead>
         <tbody>
           {inventoryData?.data.map((item, index) => (
             <TableRow key={item._id} alternating={alternatingRows} index={index}>
-              <td>
-                <strong>{item.code}</strong>
-              </td>
-              <td>
-                {item.description}
-              </td>
-              <td>{item.group}</td>
-              <td>{item.unit}</td>
+              <CodeColumn>
+                <strong>{highlightSearchTerm(item.code, search)}</strong>
+              </CodeColumn>
+              <DescriptionColumn>
+                {highlightSearchTerm(item.description, search)}
+              </DescriptionColumn>
+              <GroupColumn>{highlightSearchTerm(item.group, search)}</GroupColumn>
+              <UnitColumn>{highlightSearchTerm(item.unit, search)}</UnitColumn>
               {user?.role === 'admin' && (
-                <td>
+                <ActionsColumn>
                   <ActionButtons>
                     <Button 
                       variant="secondary" 
@@ -548,7 +719,7 @@ const Inventory: React.FC = () => {
                       Delete
                     </Button>
                   </ActionButtons>
-                </td>
+                </ActionsColumn>
               )}
             </TableRow>
           ))}
@@ -564,7 +735,7 @@ const Inventory: React.FC = () => {
               Previous
             </Button>
           )}
-          <span style={{ display: 'flex', alignItems: 'center' }}>
+          <span>
             Page {page} of {inventoryData.meta.pages}
           </span>
           {page < inventoryData.meta.pages && (
@@ -579,38 +750,37 @@ const Inventory: React.FC = () => {
 
       {/* CSV Import Modal */}
       {showImportModal && (
-        <Card style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000, minWidth: '500px' }}>
-          <h3>Import Inventory from CSV</h3>
-          <div style={{ marginBottom: '20px' }}>
+        <ImportModal>
+          <h3>Import inventory from CSV</h3>
+          <ImportInstructions>
             <p>Upload a CSV file with the following columns:</p>
-            <ul style={{ fontSize: '14px', color: '#666' }}>
+            <ImportInstructionsList>
               <li><strong>Code</strong> (required) - Unique product code</li>
               <li><strong>Description</strong> (required) - Product description</li>
               <li><strong>Group</strong> (required) - Product group</li>
               <li><strong>Unit</strong> (required) - Unit of measurement</li>
-            </ul>
+            </ImportInstructionsList>
             <div style={{ marginTop: '10px' }}>
               <Button 
                 variant="secondary" 
                 onClick={downloadTemplate}
                 style={{ fontSize: '12px', padding: '6px 12px' }}
               >
-                Download Template CSV
+                Download template CSV
               </Button>
             </div>
-          </div>
+          </ImportInstructions>
           
           <div style={{ marginBottom: '20px' }}>
-            <input
+            <ImportFileInput
               type="file"
               accept=".csv"
               onChange={handleFileSelect}
-              style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
             />
             {importFile && (
-              <div style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
+              <ImportFileInfo>
                 Selected: {importFile.name} ({(importFile.size / 1024).toFixed(1)} KB)
-              </div>
+              </ImportFileInfo>
             )}
           </div>
 
@@ -626,28 +796,28 @@ const Inventory: React.FC = () => {
           )}
 
           {importResults && (
-            <div style={{ marginBottom: '20px', padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+            <ImportResults>
               <h4>Import Results:</h4>
               <p>✅ Imported: {importResults.imported} items</p>
               <p>🔄 Updated: {importResults.updated} items</p>
               <p>❌ Errors: {importResults.errors} items</p>
               
               {importResults.details.filter((d) => d.errors).length > 0 && (
-                <div style={{ marginTop: '10px' }}>
+                <ImportErrorDetails>
                   <strong>Error Details:</strong>
-                  <ul style={{ fontSize: '12px', maxHeight: '100px', overflowY: 'auto' }}>
+                  <ImportErrorList>
                     {importResults.details.filter((d) => d.errors).map((detail, index) => (
                       <li key={index}>
                         Row {detail.row} ({detail.code}): {detail.errors?.join(', ')}
                       </li>
                     ))}
-                  </ul>
-                </div>
+                  </ImportErrorList>
+                </ImportErrorDetails>
               )}
-            </div>
+            </ImportResults>
           )}
 
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <ImportButtonContainer>
             <Button 
               onClick={handleImport}
               disabled={!importFile || importMutation.isLoading}
@@ -666,30 +836,30 @@ const Inventory: React.FC = () => {
             >
               Close
             </Button>
-          </div>
-        </Card>
+          </ImportButtonContainer>
+        </ImportModal>
       )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <ConfirmationModal>
           <ConfirmationDialog>
-            <h3>Confirm Delete</h3>
+            <h3>Confirm delete</h3>
             <p>Are you sure you want to delete the item <strong>{showDeleteConfirm.code}</strong> - {showDeleteConfirm.description}?</p>
-            <p style={{ color: '#666', fontSize: '14px' }}>This action cannot be undone.</p>
+            <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>This action cannot be undone.</p>
             <ConfirmationButtons>
               <Button 
                 variant="secondary" 
                 onClick={() => setShowDeleteConfirm(null)}
               >
-                Cancel
+                No
               </Button>
               <Button 
                 variant="danger" 
                 onClick={() => deleteMutation.mutate(showDeleteConfirm._id)}
                 disabled={deleteMutation.isLoading}
               >
-                {deleteMutation.isLoading ? 'Deleting...' : 'Delete'}
+                {deleteMutation.isLoading ? 'Deleting...' : 'Yes, delete'}
               </Button>
             </ConfirmationButtons>
           </ConfirmationDialog>

@@ -60,3 +60,4 @@ spec:
             name: frik-invoice-frontend
             port:
               number: 80
+

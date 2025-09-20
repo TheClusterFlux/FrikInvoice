@@ -14,6 +14,7 @@ import {
   ErrorMessage 
 } from '../styles/GlobalStyles';
 import { orderService, Order } from '../services/orderService';
+import { useAuth } from '../contexts/AuthContext';
 import PDFTemplateModal from '../components/PDFTemplateModal';
 
 const OrdersContainer = styled.div`
@@ -34,11 +35,79 @@ const FilterGroup = styled.div`
 
 const OrdersTable = styled(Table)`
   margin-bottom: 20px;
+  table-layout: fixed;
+  width: 100%;
+`;
+
+const InvoiceColumn = styled.td`
+  width: 15%;
+  word-break: break-word;
+`;
+
+const CustomerColumn = styled.td`
+  width: 25%;
+  word-break: break-word;
+`;
+
+const ItemsColumn = styled.td`
+  width: 10%;
+  word-break: break-word;
+`;
+
+const TotalColumn = styled.td`
+  width: 15%;
+  word-break: break-word;
+`;
+
+const DateColumn = styled.td`
+  width: 15%;
+  word-break: break-word;
+`;
+
+const StatusColumn = styled.td`
+  width: 10%;
+  word-break: break-word;
+`;
+
+const ActionsColumn = styled.td`
+  width: 10%;
+  text-align: right;
+  padding-right: 16px;
+`;
+
+const InvoiceHeader = styled.th`
+  width: 15%;
+`;
+
+const CustomerHeader = styled.th`
+  width: 25%;
+`;
+
+const ItemsHeader = styled.th`
+  width: 10%;
+`;
+
+const TotalHeader = styled.th`
+  width: 15%;
+`;
+
+const DateHeader = styled.th`
+  width: 15%;
+`;
+
+const StatusHeader = styled.th`
+  width: 10%;
+`;
+
+const ActionsHeader = styled.th`
+  width: 10%;
+  text-align: right;
 `;
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
 `;
 
 const SuccessMessage = styled.div`
@@ -90,6 +159,7 @@ const FilterLabel = styled.label`
 `;
 
 const Orders: React.FC = () => {
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
@@ -182,15 +252,15 @@ const Orders: React.FC = () => {
   return (
     <OrdersContainer>
       <PageHeader>
-        <PageTitle>Order Management</PageTitle>
-        <Button as={Link} to="/orders/new">Create New Order</Button>
+        <PageTitle>Order management</PageTitle>
+        <Button as={Link} to="/orders/new">Create new order</Button>
       </PageHeader>
 
       {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
 
       <FiltersContainer>
         <FilterGroup>
-          <FilterLabel>Search:</FilterLabel>
+          <FilterLabel>Search</FilterLabel>
           <Input
             type="text"
             placeholder="Search orders..."
@@ -199,7 +269,7 @@ const Orders: React.FC = () => {
           />
         </FilterGroup>
         <FilterGroup>
-          <FilterLabel>Status:</FilterLabel>
+          <FilterLabel>Status</FilterLabel>
           <Select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
@@ -216,44 +286,44 @@ const Orders: React.FC = () => {
       <OrdersTable>
         <thead>
           <tr>
-            <th>Invoice #</th>
-            <th>Customer</th>
-            <th>Items</th>
-            <th>Total</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <InvoiceHeader>Invoice #</InvoiceHeader>
+            <CustomerHeader>Customer</CustomerHeader>
+            <ItemsHeader>Items</ItemsHeader>
+            <TotalHeader>Total</TotalHeader>
+            <DateHeader>Date</DateHeader>
+            <StatusHeader>Status</StatusHeader>
+            <ActionsHeader>Actions</ActionsHeader>
           </tr>
         </thead>
         <tbody>
           {ordersData?.data.map((order) => (
             <tr key={order._id}>
-              <td>
+              <InvoiceColumn>
                 <strong>{order.invoiceNumber}</strong>
-              </td>
-              <td>
+              </InvoiceColumn>
+              <CustomerColumn>
                 <div>
                   <strong>{order.customerInfo.name}</strong>
-                  {order.customerInfo.email && (
+                  {user?.role === 'admin' && order.customerInfo.email && (
                     <div style={{ fontSize: '12px', color: '#666' }}>
                       {order.customerInfo.email}
                     </div>
                   )}
                 </div>
-              </td>
-              <td>
+              </CustomerColumn>
+              <ItemsColumn>
                 <div style={{ fontSize: '12px' }}>
                   {order.items.length} item{order.items.length !== 1 ? 's' : ''}
                 </div>
-              </td>
-              <td>{formatCurrency(order.total)}</td>
-              <td>{formatDate(order.createdAt)}</td>
-              <td>
+              </ItemsColumn>
+              <TotalColumn>{formatCurrency(order.total)}</TotalColumn>
+              <DateColumn>{formatDate(order.createdAt)}</DateColumn>
+              <StatusColumn>
                 <StatusBadge status={order.status}>
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </StatusBadge>
-              </td>
-              <td>
+              </StatusColumn>
+              <ActionsColumn>
                 <ActionButtons>
                   <Button 
                     variant="secondary" 
@@ -287,7 +357,7 @@ const Orders: React.FC = () => {
                     Delete
                   </Button>
                 </ActionButtons>
-              </td>
+              </ActionsColumn>
             </tr>
           ))}
         </tbody>
@@ -322,7 +392,7 @@ const Orders: React.FC = () => {
           zIndex: 1000
         }}>
           <Card style={{ width: '400px', maxWidth: '90vw' }}>
-            <h3>Sign Order</h3>
+            <h3>Sign order</h3>
             <p><strong>Invoice:</strong> {signingOrder.invoiceNumber}</p>
             <p><strong>Customer:</strong> {signingOrder.customerInfo.name}</p>
             <p><strong>Total:</strong> {formatCurrency(signingOrder.total)}</p>
@@ -340,7 +410,7 @@ const Orders: React.FC = () => {
               </div>
               <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
                 <Button type="submit" disabled={signMutation.isLoading}>
-                  {signMutation.isLoading ? 'Signing...' : 'Sign Order'}
+                  {signMutation.isLoading ? 'Signing...' : 'Sign order'}
                 </Button>
                 <Button 
                   type="button" 
@@ -374,19 +444,19 @@ const Orders: React.FC = () => {
       {showDeleteConfirm && (
         <ConfirmationModal>
           <ConfirmationDialog>
-            <h3>Confirm Delete</h3>
+            <h3>Confirm delete</h3>
             <p>Are you sure you want to delete the order <strong>{showDeleteConfirm.invoiceNumber}</strong>?</p>
-            <p style={{ color: '#666', fontSize: '14px' }}>This action cannot be undone.</p>
+            <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>This action cannot be undone.</p>
             <ConfirmationButtons>
               <Button variant="secondary" onClick={() => setShowDeleteConfirm(null)}>
-                Cancel
+                No
               </Button>
               <Button 
                 variant="danger" 
                 onClick={() => deleteMutation.mutate(showDeleteConfirm._id)}
                 disabled={deleteMutation.isLoading}
               >
-                {deleteMutation.isLoading ? 'Deleting...' : 'Delete'}
+                {deleteMutation.isLoading ? 'Deleting...' : 'Yes, delete'}
               </Button>
             </ConfirmationButtons>
           </ConfirmationDialog>
