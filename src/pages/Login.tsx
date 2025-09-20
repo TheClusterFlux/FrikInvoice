@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 import { Card, Button, Input, FormGroup, Label, ErrorMessage } from '../styles/GlobalStyles';
 
 const LoginContainer = styled.div`
@@ -43,6 +44,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   
   const { login } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +56,7 @@ const Login: React.FC = () => {
       await login(username, password);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Login failed');
+      setError(err.response?.data?.error?.message || t('loginError'));
     } finally {
       setLoading(false);
     }
@@ -63,10 +65,10 @@ const Login: React.FC = () => {
   return (
     <LoginContainer>
       <LoginCard>
-        <LoginTitle>FrikInvoice login</LoginTitle>
+        <LoginTitle>FrikInvoice {t('login')}</LoginTitle>
         <LoginForm onSubmit={handleSubmit}>
           <FormGroup>
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">{t('username')}</Label>
             <Input
               id="username"
               type="text"
@@ -78,7 +80,7 @@ const Login: React.FC = () => {
           </FormGroup>
           
           <FormGroup>
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('password')}</Label>
             <Input
               id="password"
               type="password"
@@ -92,7 +94,7 @@ const Login: React.FC = () => {
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
           <LoginButton type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? t('loading') : t('loginButton')}
           </LoginButton>
         </LoginForm>
         

@@ -10,11 +10,11 @@ import {
   PageTitle, 
   Input, 
   Select,
-  StatusBadge,
-  ErrorMessage 
+  StatusBadge
 } from '../styles/GlobalStyles';
 import { orderService, Order } from '../services/orderService';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 import PDFTemplateModal from '../components/PDFTemplateModal';
 
 const OrdersContainer = styled.div`
@@ -160,6 +160,7 @@ const FilterLabel = styled.label`
 
 const Orders: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
@@ -186,7 +187,7 @@ const Orders: React.FC = () => {
         queryClient.invalidateQueries('orders');
         setSigningOrder(null);
         setSignedBy('');
-        setSuccessMessage('Order signed successfully!');
+        setSuccessMessage(t('orderSignedSuccessfully'));
         setTimeout(() => setSuccessMessage(''), 3000);
       },
     }
@@ -196,7 +197,7 @@ const Orders: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries('orders');
       setShowDeleteConfirm(null);
-      setSuccessMessage('Order deleted successfully!');
+        setSuccessMessage(t('orderDeletedSuccessfully'));
       setTimeout(() => setSuccessMessage(''), 3000);
     },
   });
@@ -246,39 +247,39 @@ const Orders: React.FC = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading orders</div>;
+  if (isLoading) return <div>{t('loading')}</div>;
+  if (error) return <div>{t('errorLoadingOrders')}</div>;
 
   return (
     <OrdersContainer>
       <PageHeader>
-        <PageTitle>Order management</PageTitle>
-        <Button as={Link} to="/orders/new">Create new order</Button>
+        <PageTitle>{t('orderManagement')}</PageTitle>
+        <Button as={Link} to="/orders/new">{t('createNewOrderOrders')}</Button>
       </PageHeader>
 
       {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
 
       <FiltersContainer>
         <FilterGroup>
-          <FilterLabel>Search</FilterLabel>
+          <FilterLabel>{t('search')}</FilterLabel>
           <Input
             type="text"
-            placeholder="Search orders..."
+            placeholder={t('searchOrdersPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </FilterGroup>
         <FilterGroup>
-          <FilterLabel>Status</FilterLabel>
+          <FilterLabel>{t('status')}</FilterLabel>
           <Select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            <option value="">All Statuses</option>
-            <option value="draft">Draft</option>
-            <option value="pending">Pending</option>
-            <option value="signed">Signed</option>
-            <option value="completed">Completed</option>
+            <option value="">{t('allStatuses')}</option>
+            <option value="draft">{t('draft')}</option>
+            <option value="pending">{t('pending')}</option>
+            <option value="signed">{t('signed')}</option>
+            <option value="completed">{t('completed')}</option>
           </Select>
         </FilterGroup>
       </FiltersContainer>
@@ -286,13 +287,13 @@ const Orders: React.FC = () => {
       <OrdersTable>
         <thead>
           <tr>
-            <InvoiceHeader>Invoice #</InvoiceHeader>
-            <CustomerHeader>Customer</CustomerHeader>
-            <ItemsHeader>Items</ItemsHeader>
-            <TotalHeader>Total</TotalHeader>
-            <DateHeader>Date</DateHeader>
-            <StatusHeader>Status</StatusHeader>
-            <ActionsHeader>Actions</ActionsHeader>
+            <InvoiceHeader>{t('invoiceNumber')}</InvoiceHeader>
+            <CustomerHeader>{t('customer')}</CustomerHeader>
+            <ItemsHeader>{t('items')}</ItemsHeader>
+            <TotalHeader>{t('totalOrdersTable')}</TotalHeader>
+            <DateHeader>{t('date')}</DateHeader>
+            <StatusHeader>{t('status')}</StatusHeader>
+            <ActionsHeader>{t('actions')}</ActionsHeader>
           </tr>
         </thead>
         <tbody>
@@ -313,7 +314,7 @@ const Orders: React.FC = () => {
               </CustomerColumn>
               <ItemsColumn>
                 <div style={{ fontSize: '12px' }}>
-                  {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                  {order.items.length} {order.items.length !== 1 ? t('items') : t('item')}
                 </div>
               </ItemsColumn>
               <TotalColumn>{formatCurrency(order.total)}</TotalColumn>
@@ -331,14 +332,14 @@ const Orders: React.FC = () => {
                     to={`/orders/${order._id}/edit`}
                     style={{ padding: '6px 12px', fontSize: '12px' }}
                   >
-                    Edit
+                    {t('edit')}
                   </Button>
                   <Button 
                     variant="secondary" 
                     onClick={() => handleDownloadPDF(order)}
                     style={{ padding: '6px 12px', fontSize: '12px' }}
                   >
-                    PDF
+                    {t('pdf')}
                   </Button>
                   {order.status === 'draft' && (
                     <Button 
@@ -346,7 +347,7 @@ const Orders: React.FC = () => {
                       onClick={() => handleSignOrder(order)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      Sign
+                      {t('signOrder')}
                     </Button>
                   )}
                   <Button 
@@ -354,7 +355,7 @@ const Orders: React.FC = () => {
                     onClick={() => setShowDeleteConfirm(order)}
                     style={{ padding: '6px 12px', fontSize: '12px' }}
                   >
-                    Delete
+                    {t('delete')}
                   </Button>
                 </ActionButtons>
               </ActionsColumn>
@@ -366,13 +367,13 @@ const Orders: React.FC = () => {
       {ordersData?.meta && ordersData.meta.pages > 1 && (
         <PaginationContainer>
           {page > 1 && (
-            <Button onClick={() => setPage(page - 1)}>Previous</Button>
+            <Button onClick={() => setPage(page - 1)}>{t('previous')}</Button>
           )}
           <span style={{ display: 'flex', alignItems: 'center' }}>
             Page {page} of {ordersData.meta.pages}
           </span>
           {page < ordersData.meta.pages && (
-            <Button onClick={() => setPage(page + 1)}>Next</Button>
+            <Button onClick={() => setPage(page + 1)}>{t('next')}</Button>
           )}
         </PaginationContainer>
       )}
@@ -392,25 +393,25 @@ const Orders: React.FC = () => {
           zIndex: 1000
         }}>
           <Card style={{ width: '400px', maxWidth: '90vw' }}>
-            <h3>Sign order</h3>
-            <p><strong>Invoice:</strong> {signingOrder.invoiceNumber}</p>
-            <p><strong>Customer:</strong> {signingOrder.customerInfo.name}</p>
-            <p><strong>Total:</strong> {formatCurrency(signingOrder.total)}</p>
+            <h3>{t('signOrder')}</h3>
+            <p><strong>{t('invoiceNumber')}:</strong> {signingOrder.invoiceNumber}</p>
+            <p><strong>{t('customer')}:</strong> {signingOrder.customerInfo.name}</p>
+            <p><strong>{t('totalOrdersTable')}:</strong> {formatCurrency(signingOrder.total)}</p>
             
             <form onSubmit={handleSignSubmit} style={{ marginTop: '20px' }}>
               <div>
-                <label>Signed By (Customer Name):</label>
+                <label>{t('signedByCustomerName')}</label>
                 <Input
                   type="text"
                   value={signedBy}
                   onChange={(e) => setSignedBy(e.target.value)}
-                  placeholder="Enter customer name"
+                  placeholder={t('enterCustomerNamePlaceholder')}
                   required
                 />
               </div>
               <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
                 <Button type="submit" disabled={signMutation.isLoading}>
-                  {signMutation.isLoading ? 'Signing...' : 'Sign order'}
+                  {signMutation.isLoading ? t('signing') : t('signOrder')}
                 </Button>
                 <Button 
                   type="button" 
@@ -420,7 +421,7 @@ const Orders: React.FC = () => {
                     setSignedBy('');
                   }}
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
               </div>
             </form>
@@ -444,19 +445,19 @@ const Orders: React.FC = () => {
       {showDeleteConfirm && (
         <ConfirmationModal>
           <ConfirmationDialog>
-            <h3>Confirm delete</h3>
-            <p>Are you sure you want to delete the order <strong>{showDeleteConfirm.invoiceNumber}</strong>?</p>
-            <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>This action cannot be undone.</p>
+            <h3>{t('confirmDelete')}</h3>
+            <p>{t('deleteOrderWarning')} <strong>{showDeleteConfirm.invoiceNumber}</strong>?</p>
+            <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>{t('thisActionCannotBeUndone')}</p>
             <ConfirmationButtons>
               <Button variant="secondary" onClick={() => setShowDeleteConfirm(null)}>
-                No
+                {t('noCancel')}
               </Button>
               <Button 
                 variant="danger" 
                 onClick={() => deleteMutation.mutate(showDeleteConfirm._id)}
                 disabled={deleteMutation.isLoading}
               >
-                {deleteMutation.isLoading ? 'Deleting...' : 'Yes, delete'}
+                {deleteMutation.isLoading ? t('loading') : t('yesDelete')}
               </Button>
             </ConfirmationButtons>
           </ConfirmationDialog>

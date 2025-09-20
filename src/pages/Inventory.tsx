@@ -13,6 +13,7 @@ import {
 import { inventoryService, InventoryItem, CreateInventoryData } from '../services/inventoryService';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const InventoryContainer = styled.div`
   max-width: 1200px;
@@ -254,6 +255,7 @@ const PaginationInfo = styled.span`
 const Inventory: React.FC = () => {
   const { user } = useAuth();
   const { isDark } = useTheme();
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [group, setGroup] = useState('');
@@ -537,12 +539,12 @@ const Inventory: React.FC = () => {
   return (
     <InventoryContainer>
       <PageHeader>
-        <PageTitle>Inventory management</PageTitle>
+        <PageTitle>{t('inventoryManagement')}</PageTitle>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <Button onClick={exportCSV}>Export CSV</Button>
-          <Button onClick={() => setShowImportModal(true)}>Import CSV</Button>
+          <Button onClick={exportCSV}>{t('exportCSV')}</Button>
+          <Button onClick={() => setShowImportModal(true)}>{t('importCSV')}</Button>
           {user?.role === 'admin' && (
-            <Button onClick={() => setShowForm(true)}>Add new item</Button>
+            <Button onClick={() => setShowForm(true)}>{t('addNewItem')}</Button>
           )}
         </div>
       </PageHeader>
@@ -553,33 +555,33 @@ const Inventory: React.FC = () => {
         variant={alternatingRows ? 'primary' : 'secondary'}
         onClick={() => setAlternatingRows(!alternatingRows)}
       >
-        {alternatingRows ? 'Disable' : 'Enable'} Alternating row colors
+        {alternatingRows ? t('disable') : t('enable')} {t('alternatingRowColors')}
       </ToggleButton>
 
       <FiltersContainer>
         <FilterGroup>
-          <FilterLabel>Search</FilterLabel>
+          <FilterLabel>{t('search')}</FilterLabel>
           <Input
             type="text"
-            placeholder="Search items..."
+            placeholder={t('searchItemsPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </FilterGroup>
         <FilterGroup>
-          <FilterLabel>Group</FilterLabel>
+          <FilterLabel>{t('group')}</FilterLabel>
           <Select
             value={group}
             onChange={(e) => setGroup(e.target.value)}
           >
-            <option value="">All Groups</option>
+            <option value="">{t('allGroups')}</option>
             {availableGroups.map(g => (
               <option key={g} value={g}>{g}</option>
             ))}
           </Select>
         </FilterGroup>
         <FilterGroup>
-          <FilterLabel>Items per page</FilterLabel>
+          <FilterLabel>{t('itemsPerPage')}</FilterLabel>
           <Select
             value={itemsPerPage}
             onChange={(e) => setItemsPerPage(Number(e.target.value))}
@@ -594,11 +596,11 @@ const Inventory: React.FC = () => {
 
       {showForm && user?.role === 'admin' && (
         <Card>
-          <h3>{editingItem ? 'Edit item' : 'Add new item'}</h3>
+          <h3>{editingItem ? t('editItem') : t('addNewItem')}</h3>
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
               <div>
-                <label>Code *</label>
+                <label>{t('itemCode')} *</label>
                 <Input
                   type="text"
                   value={formData.code}
@@ -607,7 +609,7 @@ const Inventory: React.FC = () => {
                 />
               </div>
               <div>
-                <label>Description *</label>
+                <label>{t('description')} *</label>
                 <Input
                   type="text"
                   value={formData.description}
@@ -616,7 +618,7 @@ const Inventory: React.FC = () => {
                 />
               </div>
               <div>
-                <label>Group *</label>
+                <label>{t('group')} *</label>
                 <Input
                   type="text"
                   value={formData.group}
@@ -625,7 +627,7 @@ const Inventory: React.FC = () => {
                 />
               </div>
               <div>
-                <label>Unit *</label>
+                <label>{t('unit')} *</label>
                 <Input
                   type="text"
                   value={formData.unit}
@@ -646,7 +648,7 @@ const Inventory: React.FC = () => {
             )}
             <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
               <Button type="submit" disabled={createMutation.isLoading || updateMutation.isLoading}>
-                {editingItem ? 'Update item' : 'Add item'}
+                {editingItem ? t('updateItem') : t('addItem')}
               </Button>
               <Button 
                 type="button" 
@@ -657,7 +659,7 @@ const Inventory: React.FC = () => {
                   resetForm();
                 }}
               >
-                Cancel
+                {t('cancel')}
               </Button>
             </div>
           </form>
@@ -669,25 +671,25 @@ const Inventory: React.FC = () => {
           <tr>
             <CodeHeader>
               <SortableHeader sortable onClick={() => handleSort('code')} className={getSortClass('code')}>
-                Code
+                {t('itemCode')}
               </SortableHeader>
             </CodeHeader>
             <DescriptionHeader>
               <SortableHeader sortable onClick={() => handleSort('description')} className={getSortClass('description')}>
-                Description
+                {t('description')}
               </SortableHeader>
             </DescriptionHeader>
             <GroupHeader>
               <SortableHeader sortable onClick={() => handleSort('group')} className={getSortClass('group')}>
-                Group
+                {t('group')}
               </SortableHeader>
             </GroupHeader>
             <UnitHeader>
               <SortableHeader sortable onClick={() => handleSort('unit')} className={getSortClass('unit')}>
-                Unit
+                {t('unit')}
               </SortableHeader>
             </UnitHeader>
-            {user?.role === 'admin' && <ActionsHeader>Actions</ActionsHeader>}
+            {user?.role === 'admin' && <ActionsHeader>{t('actions')}</ActionsHeader>}
           </tr>
         </thead>
         <tbody>
@@ -709,14 +711,14 @@ const Inventory: React.FC = () => {
                       onClick={() => handleEdit(item)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      Edit
+                      {t('edit')}
                     </Button>
                     <Button 
                       variant="danger" 
                       onClick={() => setShowDeleteConfirm(item)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      Delete
+                      {t('delete')}
                     </Button>
                   </ActionButtons>
                 </ActionsColumn>
@@ -732,7 +734,7 @@ const Inventory: React.FC = () => {
             <Button 
               onClick={() => setPage(page - 1)}
             >
-              Previous
+              {t('previous')}
             </Button>
           )}
           <span>
@@ -742,7 +744,7 @@ const Inventory: React.FC = () => {
             <Button 
               onClick={() => setPage(page + 1)}
             >
-              Next
+              {t('next')}
             </Button>
           )}
         </PaginationContainer>

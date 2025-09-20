@@ -7,6 +7,7 @@ import { orderService } from '../services/orderService';
 import { inventoryService } from '../services/inventoryService';
 import { clientService } from '../services/clientService';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 import { formatCurrency } from '../utils/currency';
 import logger from '../utils/logger';
 
@@ -201,6 +202,7 @@ const ErrorMessage = styled.div`
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -300,7 +302,7 @@ const Dashboard: React.FC = () => {
   if (isLoading) {
     return (
       <DashboardContainer>
-        <LoadingSpinner>Loading dashboard...</LoadingSpinner>
+        <LoadingSpinner>{t('loading')} dashboard...</LoadingSpinner>
       </DashboardContainer>
     );
   }
@@ -308,18 +310,18 @@ const Dashboard: React.FC = () => {
   return (
     <DashboardContainer>
       <WelcomeSection show={showWelcome}>
-        <WelcomeTitle>Welcome back, {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1).toLowerCase() : 'User'}!</WelcomeTitle>
+        <WelcomeTitle>{t('welcomeBackDashboard')}, {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1).toLowerCase() : t('userDashboard')}!</WelcomeTitle>
         <WelcomeSubtitle>
           {user?.role === 'admin' 
-            ? 'Manage your invoice system and oversee all operations'
-            : 'Create and manage orders for your customers'
+            ? t('adminWelcomeMessage')
+            : t('clerkWelcomeMessage')
           }
         </WelcomeSubtitle>
       </WelcomeSection>
 
       {hasError && (
         <ErrorMessage>
-          Some data could not be loaded. Please refresh the page or contact support.
+          {t('someDataCouldNotBeLoaded')}
         </ErrorMessage>
       )}
 
@@ -327,67 +329,67 @@ const Dashboard: React.FC = () => {
         <StatCard onClick={() => handleStatCardClick('/orders')}>
           <StatIcon>📊</StatIcon>
           <StatNumber>{totalOrders}</StatNumber>
-          <StatLabel>Total orders</StatLabel>
+          <StatLabel>{t('totalOrders')}</StatLabel>
         </StatCard>
         
         <StatCard onClick={() => handleStatCardClick('/inventory')}>
           <StatIcon>📦</StatIcon>
           <StatNumber>{totalInventory}</StatNumber>
-          <StatLabel>Inventory items</StatLabel>
+          <StatLabel>{t('inventoryItems')}</StatLabel>
         </StatCard>
         
         <StatCard onClick={() => handleStatCardClick('/clients')}>
           <StatIcon>👥</StatIcon>
           <StatNumber>{totalClients}</StatNumber>
-          <StatLabel>Clients</StatLabel>
+          <StatLabel>{t('clients')}</StatLabel>
         </StatCard>
         
         <StatCard onClick={() => handleStatCardClick('/orders', 'status=pending')}>
           <StatIcon>⏳</StatIcon>
           <StatNumber>{pendingOrders}</StatNumber>
-          <StatLabel>Pending orders</StatLabel>
+          <StatLabel>{t('pendingOrders')}</StatLabel>
         </StatCard>
       </StatsGrid>
 
       <QuickActions>
         <ActionCard as={Link} to="/orders/new">
           <ActionIcon>➕</ActionIcon>
-          <ActionTitle>Create new order</ActionTitle>
+          <ActionTitle>{t('createNewOrderDashboard')}</ActionTitle>
           <ActionDescription>
-            Start a new invoice order for a customer
+            {t('createNewOrderDescription')}
           </ActionDescription>
         </ActionCard>
 
         {user?.role === 'admin' && (
           <ActionCard as={Link} to="/users">
             <ActionIcon>👤</ActionIcon>
-            <ActionTitle>User management</ActionTitle>
+            <ActionTitle>{t('userManagementDashboard')}</ActionTitle>
             <ActionDescription>
-              Manage system users and permissions
+              {t('userManagementDescription')}
             </ActionDescription>
           </ActionCard>
         )}
       </QuickActions>
 
       <RecentActivity>
-        <ActivityTitle>Recent orders</ActivityTitle>
+        <ActivityTitle>{t('recentOrders')}</ActivityTitle>
         {recentOrders.length > 0 ? (
           recentOrders.map((order) => (
             <ActivityItem key={order._id} onClick={() => handleOrderClick(order._id)}>
               <ActivityIcon>{getStatusIcon(order.status)}</ActivityIcon>
               <ActivityContent>
                 <ActivityText>
-                  Order #{order.invoiceNumber} - {order.customerInfo.name}
+                  {t('order')} #{order.invoiceNumber} - {order.customerInfo.name}
                 </ActivityText>
                 <ActivityTime>
-                  {formatDate(order.createdAt)} • Status: {order.status}
+                  {formatDate(order.createdAt)} • {t('status')}: {order.status}
                 </ActivityTime>
               </ActivityContent>
             </ActivityItem>
           ))
         ) : (
           <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
-            No recent orders found. <Link to="/orders/new">Create your first order</Link>
+            {t('noRecentActivity')}. <Link to="/orders/new">{t('createYourFirstOrder')}</Link>
           </div>
         )}
       </RecentActivity>

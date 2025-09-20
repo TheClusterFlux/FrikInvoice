@@ -13,6 +13,7 @@ import {
 } from '../styles/GlobalStyles';
 import { userService, User, CreateUserData, UpdateUserData } from '../services/userService';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 import logger from '../utils/logger';
 
 const UsersContainer = styled.div`
@@ -273,6 +274,7 @@ const RoleBadge = styled.span<{ role: string }>`
 
 const Users: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -317,7 +319,7 @@ const Users: React.FC = () => {
       queryClient.invalidateQueries('users');
       setIsCreateModalOpen(false);
       resetForm();
-      setSuccessMessage('User created successfully!');
+        setSuccessMessage(t('userCreatedSuccessfully'));
       setTimeout(() => setSuccessMessage(''), 3000);
       logger.info('Users', 'User created successfully');
     },
@@ -326,7 +328,7 @@ const Users: React.FC = () => {
         error: error.message,
         formData
       });
-      const errorMessage = error.response?.data?.error?.message || 'Failed to create user';
+        const errorMessage = error.response?.data?.error?.message || t('failedToCreateUser');
       setFormErrors([errorMessage]);
     }
   });
@@ -339,7 +341,7 @@ const Users: React.FC = () => {
         queryClient.invalidateQueries('users');
         setIsEditModalOpen(false);
         setSelectedUser(null);
-        setSuccessMessage('User updated successfully!');
+        setSuccessMessage(t('userUpdatedSuccessfully'));
         setTimeout(() => setSuccessMessage(''), 3000);
         logger.info('Users', 'User updated successfully');
       },
@@ -349,7 +351,7 @@ const Users: React.FC = () => {
           userId: selectedUser?._id,
           editFormData
         });
-        const errorMessage = error.response?.data?.error?.message || 'Failed to update user';
+        const errorMessage = error.response?.data?.error?.message || t('failedToUpdateUser');
         setFormErrors([errorMessage]);
       }
     }
@@ -364,7 +366,7 @@ const Users: React.FC = () => {
         queryClient.invalidateQueries('users');
         setIsPasswordModalOpen(false);
         setPasswordData({ newPassword: '' });
-        setSuccessMessage('Password reset successfully!');
+        setSuccessMessage(t('passwordResetSuccessfully'));
         setTimeout(() => setSuccessMessage(''), 3000);
         logger.info('Users', 'User password reset successfully');
       },
@@ -373,7 +375,7 @@ const Users: React.FC = () => {
           error: error.message,
           userId: selectedUser?._id
         });
-        const errorMessage = error.response?.data?.error?.message || 'Failed to reset password';
+        const errorMessage = error.response?.data?.error?.message || t('failedToResetPassword');
         setFormErrors([errorMessage]);
       }
     }
@@ -384,7 +386,7 @@ const Users: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries('users');
       setShowDeleteConfirm(null);
-      setSuccessMessage('User deleted successfully!');
+        setSuccessMessage(t('userDeletedSuccessfully'));
       setTimeout(() => setSuccessMessage(''), 3000);
       logger.info('Users', 'User deleted successfully');
     },
@@ -393,7 +395,7 @@ const Users: React.FC = () => {
         error: error.message,
         userId: selectedUser?._id
       });
-      const errorMessage = error.response?.data?.error?.message || 'Failed to delete user';
+        const errorMessage = error.response?.data?.error?.message || t('failedToDeleteUser');
       setFormErrors([errorMessage]);
     }
   });
@@ -479,16 +481,16 @@ const Users: React.FC = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading users</div>;
+  if (isLoading) return <div>{t('loading')}</div>;
+  if (error) return <div>{t('errorLoadingUsers')}</div>;
 
   return (
     <UsersContainer>
       <PageHeader>
-        <PageTitle>User management</PageTitle>
+        <PageTitle>{t('userManagementUsers')}</PageTitle>
         {user?.role === 'admin' && (
           <Button onClick={() => setIsCreateModalOpen(true)}>
-            Create user
+            {t('createUser')}
           </Button>
         )}
       </PageHeader>
@@ -499,28 +501,28 @@ const Users: React.FC = () => {
         variant={alternatingRows ? 'primary' : 'secondary'}
         onClick={() => setAlternatingRows(!alternatingRows)}
       >
-        {alternatingRows ? 'Disable' : 'Enable'} alternating row colors
+        {alternatingRows ? t('disable') : t('enable')} {t('alternatingRowColors')}
       </ToggleButton>
 
       <FiltersContainer>
         <FilterGroup>
-          <FilterLabel>Search</FilterLabel>
+          <FilterLabel>{t('search')}</FilterLabel>
           <Input
             type="text"
-            placeholder="Search users..."
+            placeholder={t('searchUsersPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </FilterGroup>
         <FilterGroup>
-          <FilterLabel>Role:</FilterLabel>
+          <FilterLabel>{t('role')}</FilterLabel>
           <Select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
           >
-            <option value="">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="clerk">Clerk</option>
+            <option value="">{t('allRoles')}</option>
+            <option value="admin">{t('admin')}</option>
+            <option value="clerk">{t('clerk')}</option>
           </Select>
         </FilterGroup>
       </FiltersContainer>
@@ -528,12 +530,12 @@ const Users: React.FC = () => {
       <UsersTable>
         <thead>
           <tr>
-            <UsernameHeader>Username</UsernameHeader>
-            <RoleHeader>Role</RoleHeader>
-            <StatusHeader>Status</StatusHeader>
-            <LastLoginHeader>Last Login</LastLoginHeader>
-            <CreatedHeader>Created</CreatedHeader>
-            {user?.role === 'admin' && <ActionsHeader>Actions</ActionsHeader>}
+            <UsernameHeader>{t('username')}</UsernameHeader>
+            <RoleHeader>{t('role')}</RoleHeader>
+            <StatusHeader>{t('status')}</StatusHeader>
+            <LastLoginHeader>{t('lastLogin')}</LastLoginHeader>
+            <CreatedHeader>{t('created')}</CreatedHeader>
+            {user?.role === 'admin' && <ActionsHeader>{t('actions')}</ActionsHeader>}
           </tr>
         </thead>
         <tbody>
@@ -547,11 +549,11 @@ const Users: React.FC = () => {
               </RoleColumn>
               <StatusColumn>
                 <StatusBadge status={userItem.isActive ? 'active' : 'inactive'}>
-                  {userItem.isActive ? 'Active' : 'Inactive'}
+                  {userItem.isActive ? t('active') : t('inactive')}
                 </StatusBadge>
               </StatusColumn>
               <LastLoginColumn>
-                {userItem.lastLogin ? formatDate(userItem.lastLogin) : 'Never'}
+                {userItem.lastLogin ? formatDate(userItem.lastLogin) : t('never')}
               </LastLoginColumn>
               <CreatedColumn>{formatDate(userItem.createdAt)}</CreatedColumn>
               {user?.role === 'admin' && (
@@ -562,21 +564,21 @@ const Users: React.FC = () => {
                       onClick={() => handleEdit(userItem)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      Edit
+                      {t('edit')}
                     </Button>
                     <Button 
                       variant="secondary" 
                       onClick={() => handleResetPassword(userItem)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      Reset password
+                      {t('resetPassword')}
                     </Button>
                     <Button 
                       variant="danger" 
                       onClick={() => handleDelete(userItem)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      Delete
+                      {t('delete')}
                     </Button>
                   </ActionButtons>
                 </ActionsColumn>
@@ -589,13 +591,13 @@ const Users: React.FC = () => {
       {usersData?.meta && usersData.meta.pages > 1 && (
         <PaginationContainer>
           {page > 1 && (
-            <Button onClick={() => setPage(page - 1)}>Previous</Button>
+            <Button onClick={() => setPage(page - 1)}>{t('previous')}</Button>
           )}
           <span style={{ display: 'flex', alignItems: 'center' }}>
             Page {page} of {usersData.meta.pages}
           </span>
           {page < usersData.meta.pages && (
-            <Button onClick={() => setPage(page + 1)}>Next</Button>
+            <Button onClick={() => setPage(page + 1)}>{t('next')}</Button>
           )}
         </PaginationContainer>
       )}
@@ -604,7 +606,7 @@ const Users: React.FC = () => {
       <Modal isOpen={isCreateModalOpen}>
         <ModalContent>
           <ModalHeader>
-            <ModalTitle>Create User</ModalTitle>
+            <ModalTitle>{t('createUser')}</ModalTitle>
             <CloseButton onClick={() => setIsCreateModalOpen(false)}>
               ×
             </CloseButton>
@@ -612,7 +614,7 @@ const Users: React.FC = () => {
           
           <Form onSubmit={handleCreate}>
             <FormGroup>
-              <Label>Username</Label>
+              <Label>{t('username')}</Label>
               <Input
                 type="text"
                 value={formData.username}
@@ -622,7 +624,7 @@ const Users: React.FC = () => {
             </FormGroup>
             
             <FormGroup>
-              <Label>Password</Label>
+              <Label>{t('password')}</Label>
               <Input
                 type="password"
                 value={formData.password}
@@ -632,7 +634,7 @@ const Users: React.FC = () => {
             </FormGroup>
             
             <FormGroup>
-              <Label>Role</Label>
+              <Label>{t('role')}</Label>
               <Select
                 value={formData.role}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, role: e.target.value as 'clerk' | 'admin' })}

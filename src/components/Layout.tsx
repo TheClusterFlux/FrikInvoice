@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const LayoutContainer = styled.div<{ sidebarCollapsed: boolean }>`
   display: flex;
@@ -384,16 +385,16 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useTranslation();
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isEnglish, setIsEnglish] = useState(true); // Default to English
 
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/inventory', label: 'Inventory', icon: '📦' },
-    { path: '/clients', label: 'Clients', icon: '👥' },
-    { path: '/orders', label: 'Orders', icon: '📋' },
-    ...(user?.role === 'admin' ? [{ path: '/users', label: 'Users', icon: '👤' }] : []),
+    { path: '/', label: t('dashboard'), icon: '📊' },
+    { path: '/inventory', label: t('inventory'), icon: '📦' },
+    { path: '/clients', label: t('clients'), icon: '👥' },
+    { path: '/orders', label: t('orders'), icon: '📋' },
+    ...(user?.role === 'admin' ? [{ path: '/users', label: t('users'), icon: '👤' }] : []),
   ];
 
   const toggleSidebar = () => {
@@ -401,7 +402,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const toggleLanguage = () => {
-    setIsEnglish(!isEnglish);
+    setLanguage(language === 'en' ? 'af' : 'en');
   };
 
   const isDashboard = location.pathname === '/';
@@ -440,7 +441,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <LanguageToggleSwitch 
               isDark={isDark} 
               collapsed={sidebarCollapsed} 
-              isEnglish={isEnglish}
+              isEnglish={language === 'en'}
               onClick={toggleLanguage}
             >
               <span>EN</span>
@@ -449,7 +450,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </ToggleContainer>
           <LogoutButton collapsed={sidebarCollapsed} onClick={logout}>
             <span>↪</span>
-            {!sidebarCollapsed && <span>Logout</span>}
+            {!sidebarCollapsed && <span>{t('logout')}</span>}
           </LogoutButton>
         </SidebarFooter>
         <ToggleButton 
@@ -462,9 +463,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       <MainContent sidebarCollapsed={sidebarCollapsed} isDark={isDark}>
         <Header isDark={isDark} hideTitle={!isDashboard}>
-          <h1>Order management system</h1>
+          <h1>{t('orderManagementSystem')}</h1>
           <UserInfo isDark={isDark}>
-            <UserName isDark={isDark}>Welcome, {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1).toLowerCase() : 'User'}</UserName>
+            <UserName isDark={isDark}>{t('welcomeBack')}, {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1).toLowerCase() : 'User'}</UserName>
           </UserInfo>
         </Header>
         {children}

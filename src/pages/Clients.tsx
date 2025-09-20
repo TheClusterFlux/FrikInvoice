@@ -12,6 +12,7 @@ import {
 } from '../styles/GlobalStyles';
 import { clientService, Client, CreateClientData } from '../services/clientService';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const ClientsContainer = styled.div`
   max-width: 1200px;
@@ -188,6 +189,7 @@ const TableRow = styled.tr<{ alternating: boolean; index: number }>`
 
 const Clients: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -328,15 +330,15 @@ const Clients: React.FC = () => {
     return parts.filter(Boolean).join(', ');
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading clients</div>;
+  if (isLoading) return <div>{t('loading')}</div>;
+  if (error) return <div>{t('errorLoadingClients')}</div>;
 
   return (
     <ClientsContainer>
       <PageHeader>
-        <PageTitle>Client management</PageTitle>
+        <PageTitle>{t('clientManagement')}</PageTitle>
         {user?.role === 'admin' && (
-          <Button onClick={() => setShowForm(true)}>Add new client</Button>
+          <Button onClick={() => setShowForm(true)}>{t('addNewClient')}</Button>
         )}
       </PageHeader>
 
@@ -346,15 +348,15 @@ const Clients: React.FC = () => {
         variant={alternatingRows ? 'primary' : 'secondary'}
         onClick={() => setAlternatingRows(!alternatingRows)}
       >
-        {alternatingRows ? 'Disable' : 'Enable'} alternating row colors
+        {alternatingRows ? t('disable') : t('enable')} {t('alternatingRowColors')}
       </ToggleButton>
 
       <FiltersContainer>
         <FilterGroup>
-          <FilterLabel>Search</FilterLabel>
+          <FilterLabel>{t('search')}</FilterLabel>
           <Input
             type="text"
-            placeholder="Search clients..."
+            placeholder={t('searchClientsPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -363,11 +365,11 @@ const Clients: React.FC = () => {
 
       {showForm && user?.role === 'admin' && (
         <Card>
-          <h3>{editingClient ? 'Edit client' : 'Add new client'}</h3>
+          <h3>{editingClient ? t('editClient') : t('addNewClient')}</h3>
           <form onSubmit={handleSubmit}>
             <FormGrid>
               <div>
-                <label>Name *</label>
+                <label>{t('name')} *</label>
                 <Input
                   type="text"
                   value={formData.name}
@@ -376,7 +378,7 @@ const Clients: React.FC = () => {
                 />
               </div>
               <div>
-                <label>Email</label>
+                <label>{t('email')}</label>
                 <Input
                   type="email"
                   value={formData.email}
@@ -384,30 +386,30 @@ const Clients: React.FC = () => {
                 />
               </div>
               <div>
-                <label>Phone</label>
+                <label>{t('phone')}</label>
                 <Input
                   type="text"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="e.g., +27 12 345 6789"
+                  placeholder={t('phonePlaceholder')}
                 />
               </div>
               <div>
-                <label>Tax Number</label>
+                <label>{t('taxNumber')}</label>
                 <Input
                   type="text"
                   value={formData.taxNumber}
                   onChange={(e) => setFormData({ ...formData, taxNumber: e.target.value })}
-                  placeholder="VAT Number"
+                  placeholder={t('vatNumberPlaceholder')}
                 />
               </div>
             </FormGrid>
 
             <AddressSection>
-              <h4>Address</h4>
+              <h4>{t('address')}</h4>
               <AddressGrid>
                 <div>
-                  <label>Street Address</label>
+                  <label>{t('streetAddress')}</label>
                   <Input
                     type="text"
                     value={formData.address?.street || ''}
@@ -415,11 +417,11 @@ const Clients: React.FC = () => {
                       ...formData, 
                       address: { ...formData.address, street: e.target.value }
                     })}
-                    placeholder="e.g., 123 Main Street"
+                    placeholder={t('streetAddressPlaceholder')}
                   />
                 </div>
                 <div>
-                  <label>City/Town</label>
+                  <label>{t('cityTown')}</label>
                   <Input
                     type="text"
                     value={formData.address?.city || ''}
@@ -427,11 +429,11 @@ const Clients: React.FC = () => {
                       ...formData, 
                       address: { ...formData.address, city: e.target.value }
                     })}
-                    placeholder="e.g., Johannesburg or Bloemfontein"
+                    placeholder={t('cityPlaceholder')}
                   />
                 </div>
                 <div>
-                  <label>Province</label>
+                  <label>{t('province')}</label>
                   <Input
                     type="text"
                     value={formData.address?.state || ''}
@@ -439,11 +441,11 @@ const Clients: React.FC = () => {
                       ...formData, 
                       address: { ...formData.address, state: e.target.value }
                     })}
-                    placeholder="e.g., Gauteng"
+                    placeholder={t('provincePlaceholder')}
                   />
                 </div>
                 <div>
-                  <label>Postal Code</label>
+                  <label>{t('postalCode')}</label>
                   <Input
                     type="text"
                     value={formData.address?.zipCode || ''}
@@ -451,12 +453,12 @@ const Clients: React.FC = () => {
                       ...formData, 
                       address: { ...formData.address, zipCode: e.target.value }
                     })}
-                    placeholder="e.g., 2196"
+                    placeholder={t('postalCodePlaceholder')}
                   />
                 </div>
               </AddressGrid>
               <div style={{ marginTop: '16px' }}>
-                <label>Country</label>
+                <label>{t('country')}</label>
                 <Input
                   type="text"
                   value={formData.address?.country || ''}
@@ -464,24 +466,24 @@ const Clients: React.FC = () => {
                     ...formData, 
                     address: { ...formData.address, country: e.target.value }
                   })}
-                  placeholder="South Africa"
+                  placeholder={t('countryPlaceholder')}
                 />
               </div>
             </AddressSection>
 
             <div style={{ marginTop: '16px' }}>
-              <label>Notes</label>
+              <label>{t('notes')}</label>
               <Input
                 type="text"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Additional notes about the client..."
+                placeholder={t('additionalNotesPlaceholder')}
               />
             </div>
 
             {formErrors.length > 0 && (
               <ValidationError>
-                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Please fix the following errors:</div>
+                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{t('formError')}</div>
                 <ul style={{ margin: 0, paddingLeft: '20px' }}>
                   {formErrors.map((error, index) => (
                     <li key={index}>{error}</li>
@@ -491,7 +493,7 @@ const Clients: React.FC = () => {
             )}
             <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
               <Button type="submit" disabled={createMutation.isLoading || updateMutation.isLoading}>
-                {editingClient ? 'Save client' : 'Add client'}
+                {editingClient ? t('saveClient') : t('addClient')}
               </Button>
               <Button 
                 type="button" 
@@ -502,7 +504,7 @@ const Clients: React.FC = () => {
                   resetForm();
                 }}
               >
-                Cancel
+                {t('cancel')}
               </Button>
             </div>
           </form>
@@ -512,12 +514,12 @@ const Clients: React.FC = () => {
       <ClientsTable>
         <thead>
           <tr>
-            <NameHeader>Name</NameHeader>
-            <ContactHeader>Contact</ContactHeader>
-            <AddressHeader>Address</AddressHeader>
-            <TaxHeader>Tax Number</TaxHeader>
-            <StatusHeader>Status</StatusHeader>
-            {user?.role === 'admin' && <ActionsHeader>Actions</ActionsHeader>}
+            <NameHeader>{t('name')}</NameHeader>
+            <ContactHeader>{t('contact')}</ContactHeader>
+            <AddressHeader>{t('address')}</AddressHeader>
+            <TaxHeader>{t('taxNumber')}</TaxHeader>
+            <StatusHeader>{t('status')}</StatusHeader>
+            {user?.role === 'admin' && <ActionsHeader>{t('actions')}</ActionsHeader>}
           </tr>
         </thead>
         <tbody>
@@ -540,7 +542,7 @@ const Clients: React.FC = () => {
               <TaxColumn>{client.taxNumber || '-'}</TaxColumn>
               <StatusColumn>
                 <StatusBadge status={client.isActive ? 'active' : 'inactive'}>
-                  {client.isActive ? 'Active' : 'Inactive'}
+                  {client.isActive ? t('active') : t('inactive')}
                 </StatusBadge>
               </StatusColumn>
               {user?.role === 'admin' && (
@@ -551,14 +553,14 @@ const Clients: React.FC = () => {
                       onClick={() => handleEdit(client)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      Edit
+                      {t('edit')}
                     </Button>
                     <Button 
                       variant="danger" 
                       onClick={() => setShowDeleteConfirm(client)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      Delete
+                      {t('delete')}
                     </Button>
                   </ActionButtons>
                 </ActionsColumn>
@@ -571,13 +573,13 @@ const Clients: React.FC = () => {
       {clientsData?.meta && clientsData.meta.pages > 1 && (
         <PaginationContainer>
           {page > 1 && (
-            <Button onClick={() => setPage(page - 1)}>Previous</Button>
+            <Button onClick={() => setPage(page - 1)}>{t('previous')}</Button>
           )}
           <span style={{ display: 'flex', alignItems: 'center' }}>
             Page {page} of {clientsData.meta.pages}
           </span>
           {page < clientsData.meta.pages && (
-            <Button onClick={() => setPage(page + 1)}>Next</Button>
+            <Button onClick={() => setPage(page + 1)}>{t('next')}</Button>
           )}
         </PaginationContainer>
       )}
@@ -586,19 +588,19 @@ const Clients: React.FC = () => {
       {showDeleteConfirm && (
         <ConfirmationModal>
           <ConfirmationDialog>
-            <h3>Confirm delete</h3>
-            <p>Are you sure you want to delete the client <strong>{showDeleteConfirm.name}</strong>?</p>
-            <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>This action cannot be undone.</p>
+            <h3>{t('confirmDelete')}</h3>
+            <p>{t('deleteWarning')} <strong>{showDeleteConfirm.name}</strong>?</p>
+            <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>{t('thisActionCannotBeUndone')}</p>
             <ConfirmationButtons>
               <Button variant="secondary" onClick={() => setShowDeleteConfirm(null)}>
-                No
+                {t('noCancel')}
               </Button>
               <Button 
                 variant="danger" 
                 onClick={() => deleteMutation.mutate(showDeleteConfirm._id)}
                 disabled={deleteMutation.isLoading}
               >
-                {deleteMutation.isLoading ? 'Deleting...' : 'Yes, delete'}
+                {deleteMutation.isLoading ? t('loading') : t('yesDelete')}
               </Button>
             </ConfirmationButtons>
           </ConfirmationDialog>
