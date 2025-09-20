@@ -715,11 +715,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <MainContent sidebarCollapsed={sidebarCollapsed} isDark={isDark}>
         <Header isDark={isDark} hideTitle={!isDashboard}>
           <h1>{t('orderManagementSystem')}</h1>
-          <UserInfo isDark={isDark}>
-            {showWelcome && (
+          {showWelcome && (
+            <UserInfo isDark={isDark}>
               <UserName isDark={isDark}>{t('welcomeBack')}, {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1).toLowerCase() : 'User'}</UserName>
-            )}
-          </UserInfo>
+            </UserInfo>
+          )}
         </Header>
         {children}
       </MainContent>
