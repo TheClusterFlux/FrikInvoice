@@ -8,12 +8,17 @@ import { inventoryService } from '../services/inventoryService';
 import { clientService } from '../services/clientService';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
-import { formatCurrency } from '../utils/currency';
+import { shouldShowWelcomeToday, markWelcomeAsShownToday } from '../utils/welcomeUtils';
 import logger from '../utils/logger';
 
 const DashboardContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+  padding: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
 `;
 
 const StatCard = styled(Card)`
@@ -25,6 +30,10 @@ const StatCard = styled(Card)`
   transition: all 0.2s ease;
   background: var(--bg-secondary);
   color: var(--text-primary);
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
   
   &::before {
     content: '';
@@ -39,6 +48,10 @@ const StatCard = styled(Card)`
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+    
+    @media (max-width: 768px) {
+      transform: none;
+    }
   }
 `;
 
@@ -47,6 +60,10 @@ const StatNumber = styled.div`
   font-weight: bold;
   color: #007bff;
   margin-bottom: 8px;
+  
+  @media (max-width: 768px) {
+    font-size: 24px;
+  }
 `;
 
 const StatLabel = styled.div`
@@ -55,6 +72,10 @@ const StatLabel = styled.div`
   margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
 `;
 
 const StatIcon = styled.div`
@@ -67,6 +88,12 @@ const QuickActions = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   margin-bottom: 30px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
 `;
 
 const ActionCard = styled(Card)`
@@ -77,11 +104,19 @@ const ActionCard = styled(Card)`
   cursor: pointer;
   background: var(--bg-secondary);
   color: var(--text-primary);
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
 
   &:hover {
     transform: translateY(-2px);
     border-color: #007bff;
     box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+    
+    @media (max-width: 768px) {
+      transform: none;
+    }
   }
 `;
 
@@ -107,6 +142,10 @@ const RecentActivity = styled(Card)`
   padding: 24px;
   background: var(--bg-secondary);
   color: var(--text-primary);
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
 `;
 
 const ActivityTitle = styled.h2`
@@ -123,6 +162,10 @@ const ActivityItem = styled.div`
   cursor: pointer;
   transition: all 0.2s ease;
   
+  @media (max-width: 768px) {
+    padding: 8px 0;
+  }
+  
   &:last-child {
     border-bottom: none;
   }
@@ -134,6 +177,13 @@ const ActivityItem = styled.div`
     margin-left: -8px;
     margin-right: -8px;
     border-radius: 6px;
+    
+    @media (max-width: 768px) {
+      padding-left: 4px;
+      padding-right: 4px;
+      margin-left: -4px;
+      margin-right: -4px;
+    }
   }
 `;
 
@@ -181,6 +231,17 @@ const WelcomeSubtitle = styled.p`
 
 const StatsGrid = styled(Grid)`
   margin-bottom: 30px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 `;
 
 const LoadingSpinner = styled.div`
@@ -206,14 +267,13 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [showWelcome, setShowWelcome] = useState(false);
 
-  // Check if welcome should be shown (once per day)
+  // Check if welcome should be shown today
   useEffect(() => {
-    const today = new Date().toDateString();
-    const lastWelcomeDate = localStorage.getItem('lastWelcomeDate');
+    const shouldShow = shouldShowWelcomeToday();
+    setShowWelcome(shouldShow);
     
-    if (lastWelcomeDate !== today) {
-      setShowWelcome(true);
-      localStorage.setItem('lastWelcomeDate', today);
+    if (shouldShow) {
+      markWelcomeAsShownToday();
     }
   }, []);
 

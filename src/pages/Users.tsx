@@ -19,6 +19,11 @@ import logger from '../utils/logger';
 const UsersContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    padding-bottom: 80px; /* Space for floating button */
+  }
 `;
 
 const FiltersContainer = styled(Card)`
@@ -26,16 +31,149 @@ const FiltersContainer = styled(Card)`
   display: flex;
   gap: 16px;
   align-items: end;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
 `;
 
 const FilterGroup = styled.div`
   flex: 1;
 `;
 
+const FloatingActionButton = styled.button`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.6);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+`;
+
+const DesktopButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
 const UsersTable = styled(Table)`
   margin-bottom: 20px;
   table-layout: fixed;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    display: none; /* Hide table on mobile */
+  }
+`;
+
+const TableContainer = styled.div`
+  overflow-x: auto;
+  margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    display: none; /* Hide table on mobile */
+  }
+`;
+
+const MobileCardContainer = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+    margin-bottom: 20px;
+  }
+`;
+
+const MobileCard = styled(Card)`
+  margin-bottom: 12px;
+  padding: 16px;
+  
+  @media (max-width: 768px) {
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+`;
+
+const MobileCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+`;
+
+const MobileCardTitle = styled.h4`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+`;
+
+const MobileCardRole = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const MobileCardContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const MobileCardField = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const MobileCardLabel = styled.span`
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 4px;
+`;
+
+const MobileCardValue = styled.span`
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 400;
+`;
+
+const MobileCardActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
 `;
 
 const UsernameColumn = styled.td`
@@ -140,21 +278,6 @@ const PaginationContainer = styled.div`
   justify-content: center;
   gap: 12px;
   align-items: center;
-`;
-
-const ToggleButton = styled(Button)<{ variant?: 'primary' | 'secondary' }>`
-  margin-bottom: 16px;
-  background-color: ${props => props.variant === 'primary' ? '#007bff' : '#6c757d'};
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  
-  &:hover {
-    background-color: ${props => props.variant === 'primary' ? '#0056b3' : '#545b62'};
-  }
 `;
 
 const TableRow = styled.tr<{ alternating?: boolean; index?: number }>`
@@ -293,7 +416,7 @@ const Users: React.FC = () => {
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<User | null>(null);
-  const [alternatingRows, setAlternatingRows] = useState(false);
+  const [alternatingRows] = useState(true);
 
   const queryClient = useQueryClient();
 
@@ -488,21 +611,16 @@ const Users: React.FC = () => {
     <UsersContainer>
       <PageHeader>
         <PageTitle>{t('userManagementUsers')}</PageTitle>
-        {user?.role === 'admin' && (
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            {t('createUser')}
-          </Button>
-        )}
+        <DesktopButtons>
+          {user?.role === 'admin' && (
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              {t('createUser')}
+            </Button>
+          )}
+        </DesktopButtons>
       </PageHeader>
 
       {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
-
-      <ToggleButton 
-        variant={alternatingRows ? 'primary' : 'secondary'}
-        onClick={() => setAlternatingRows(!alternatingRows)}
-      >
-        {alternatingRows ? t('disable') : t('enable')} {t('alternatingRowColors')}
-      </ToggleButton>
 
       <FiltersContainer>
         <FilterGroup>
@@ -527,7 +645,8 @@ const Users: React.FC = () => {
         </FilterGroup>
       </FiltersContainer>
 
-      <UsersTable>
+      <TableContainer>
+        <UsersTable>
         <thead>
           <tr>
             <UsernameHeader>{t('username')}</UsernameHeader>
@@ -586,7 +705,73 @@ const Users: React.FC = () => {
             </TableRow>
           ))}
         </tbody>
-      </UsersTable>
+        </UsersTable>
+      </TableContainer>
+
+      {/* Mobile Card Layout */}
+      <MobileCardContainer>
+        {usersData?.data.map((userItem, index) => (
+          <MobileCard key={userItem._id}>
+            <MobileCardHeader>
+              <MobileCardTitle>{userItem.username}</MobileCardTitle>
+              <MobileCardRole>
+                <RoleBadge role={userItem.role}>
+                  {userItem.role.toUpperCase()}
+                </RoleBadge>
+              </MobileCardRole>
+            </MobileCardHeader>
+            
+            <MobileCardContent>
+              <MobileCardField>
+                <MobileCardLabel>{t('status')}</MobileCardLabel>
+                <MobileCardValue>
+                  <StatusBadge status={userItem.isActive ? 'active' : 'inactive'}>
+                    {userItem.isActive ? t('active') : t('inactive')}
+                  </StatusBadge>
+                </MobileCardValue>
+              </MobileCardField>
+              
+              <MobileCardField>
+                <MobileCardLabel>{t('lastLogin')}</MobileCardLabel>
+                <MobileCardValue>
+                  {userItem.lastLogin ? formatDate(userItem.lastLogin) : t('never')}
+                </MobileCardValue>
+              </MobileCardField>
+            </MobileCardContent>
+            
+            <MobileCardField style={{ gridColumn: '1 / -1', marginBottom: '12px' }}>
+              <MobileCardLabel>{t('created')}</MobileCardLabel>
+              <MobileCardValue>{formatDate(userItem.createdAt)}</MobileCardValue>
+            </MobileCardField>
+            
+            {user?.role === 'admin' && (
+              <MobileCardActions>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => handleEdit(userItem)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('edit')}
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => handleResetPassword(userItem)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('resetPassword')}
+                </Button>
+                <Button 
+                  variant="danger" 
+                  onClick={() => handleDelete(userItem)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('delete')}
+                </Button>
+              </MobileCardActions>
+            )}
+          </MobileCard>
+        ))}
+      </MobileCardContainer>
 
       {usersData?.meta && usersData.meta.pages > 1 && (
         <PaginationContainer>
@@ -809,6 +994,13 @@ const Users: React.FC = () => {
             </ConfirmationButtons>
           </ConfirmationDialog>
         </ConfirmationModal>
+      )}
+      
+      {/* Floating Action Button for Mobile */}
+      {user?.role === 'admin' && (
+        <FloatingActionButton onClick={() => setIsCreateModalOpen(true)}>
+          +
+        </FloatingActionButton>
       )}
     </UsersContainer>
   );

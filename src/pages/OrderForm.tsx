@@ -210,7 +210,7 @@ const ItemCard = styled.div<{ isExpanded: boolean }>`
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
@@ -218,6 +218,10 @@ const ItemCard = styled.div<{ isExpanded: boolean }>`
   &:hover {
     border-color: #007bff;
     box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    margin-bottom: 16px;
   }
 `;
 
@@ -240,11 +244,15 @@ const RemoveItemButton = styled.button`
 `;
 
 const ItemCardContent = styled.div<{ isExpanded: boolean }>`
-  padding: ${({ isExpanded }) => isExpanded ? '20px' : '0'};
+  padding: ${({ isExpanded }) => isExpanded ? '24px' : '0'};
   max-height: ${({ isExpanded }) => isExpanded ? '1000px' : '0'};
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: ${({ isExpanded }) => isExpanded ? '1' : '0'};
+  
+  @media (max-width: 768px) {
+    padding: ${({ isExpanded }) => isExpanded ? '20px' : '0'};
+  }
 `;
 
 const ItemSelectionSection = styled.div`
@@ -419,31 +427,52 @@ const CollapsedItemSummary = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
+  padding: 20px 24px;
   color: var(--text-secondary);
   font-size: 14px;
+  min-height: 60px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+  }
 `;
 
 const CollapsedItemInfo = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 20px;
   align-items: center;
+  flex-wrap: wrap;
+  
+  @media (max-width: 768px) {
+    gap: 12px;
+    width: 100%;
+  }
 `;
 
 const CollapsedItemCode = styled.span`
   font-weight: 600;
   color: #007bff;
+  font-size: 15px;
 `;
 
 const CollapsedItemActions = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: center;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: space-between;
+  }
 `;
 
 const CollapsedItemTotal = styled.span`
   font-weight: 600;
   color: var(--text-primary);
+  font-size: 16px;
 `;
 
 // Modern Searchable Select Styled Components
@@ -1255,7 +1284,7 @@ const OrderFormPage: React.FC = () => {
     const itemTotal = totals[item.inventoryId];
     
     if (itemTotal) {
-      return `${item.quantity}X ${item.unit || inventoryItem.unit || 'units'} : ${itemTotal.formattedTotal} ${itemTotal.displayUnit}`;
+      return `${item.quantity} X ${item.unit || inventoryItem.unit || 'units'} : ${itemTotal.formattedTotal} ${itemTotal.displayUnit}`;
     }
     
     return `${item.quantity} ${item.unit || inventoryItem.unit || 'units'}`;

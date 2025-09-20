@@ -20,6 +20,11 @@ import PDFTemplateModal from '../components/PDFTemplateModal';
 const OrdersContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    padding-bottom: 80px; /* Space for floating button */
+  }
 `;
 
 const FiltersContainer = styled(Card)`
@@ -27,16 +32,153 @@ const FiltersContainer = styled(Card)`
   display: flex;
   gap: 16px;
   align-items: end;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
 `;
 
 const FilterGroup = styled.div`
   flex: 1;
 `;
 
+const FloatingActionButton = styled.button`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.6);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+`;
+
+const DesktopButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
 const OrdersTable = styled(Table)`
   margin-bottom: 20px;
   table-layout: fixed;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    display: none; /* Hide table on mobile */
+  }
+`;
+
+const TableContainer = styled.div`
+  overflow-x: auto;
+  margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    display: none; /* Hide table on mobile */
+  }
+`;
+
+const MobileCardContainer = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+    margin-bottom: 20px;
+  }
+`;
+
+const MobileCard = styled(Card)`
+  margin-bottom: 12px;
+  padding: 16px;
+  
+  @media (max-width: 768px) {
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+`;
+
+const MobileCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+`;
+
+const MobileCardTitle = styled.h4`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+`;
+
+const MobileCardInvoice = styled.span`
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+`;
+
+const MobileCardContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const MobileCardField = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const MobileCardLabel = styled.span`
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 4px;
+`;
+
+const MobileCardValue = styled.span`
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 400;
+`;
+
+const MobileCardActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
 `;
 
 const InvoiceColumn = styled.td`
@@ -254,7 +396,9 @@ const Orders: React.FC = () => {
     <OrdersContainer>
       <PageHeader>
         <PageTitle>{t('orderManagement')}</PageTitle>
-        <Button as={Link} to="/orders/new">{t('createNewOrderOrders')}</Button>
+        <DesktopButtons>
+          <Button as={Link} to="/orders/new">{t('createNewOrderOrders')}</Button>
+        </DesktopButtons>
       </PageHeader>
 
       {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
@@ -284,7 +428,8 @@ const Orders: React.FC = () => {
         </FilterGroup>
       </FiltersContainer>
 
-      <OrdersTable>
+      <TableContainer>
+        <OrdersTable>
         <thead>
           <tr>
             <InvoiceHeader>{t('invoiceNumber')}</InvoiceHeader>
@@ -362,7 +507,89 @@ const Orders: React.FC = () => {
             </tr>
           ))}
         </tbody>
-      </OrdersTable>
+        </OrdersTable>
+      </TableContainer>
+
+      {/* Mobile Card Layout */}
+      <MobileCardContainer>
+        {ordersData?.data.map((order) => (
+          <MobileCard key={order._id}>
+            <MobileCardHeader>
+              <MobileCardTitle>{order.customerInfo.name}</MobileCardTitle>
+              <MobileCardInvoice>{order.invoiceNumber}</MobileCardInvoice>
+            </MobileCardHeader>
+            
+            <MobileCardContent>
+              <MobileCardField>
+                <MobileCardLabel>{t('items')}</MobileCardLabel>
+                <MobileCardValue>
+                  {order.items.length} {order.items.length !== 1 ? t('items') : t('item')}
+                </MobileCardValue>
+              </MobileCardField>
+              
+              <MobileCardField>
+                <MobileCardLabel>{t('totalOrdersTable')}</MobileCardLabel>
+                <MobileCardValue>{formatCurrency(order.total)}</MobileCardValue>
+              </MobileCardField>
+            </MobileCardContent>
+            
+            <MobileCardField style={{ gridColumn: '1 / -1', marginBottom: '12px' }}>
+              <MobileCardLabel>{t('date')}</MobileCardLabel>
+              <MobileCardValue>{formatDate(order.createdAt)}</MobileCardValue>
+            </MobileCardField>
+            
+            <MobileCardField style={{ gridColumn: '1 / -1', marginBottom: '12px' }}>
+              <MobileCardLabel>{t('status')}</MobileCardLabel>
+              <MobileCardValue>
+                <StatusBadge status={order.status}>
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </StatusBadge>
+              </MobileCardValue>
+            </MobileCardField>
+            
+            {user?.role === 'admin' && order.customerInfo.email && (
+              <MobileCardField style={{ gridColumn: '1 / -1', marginBottom: '12px' }}>
+                <MobileCardLabel>{t('email')}</MobileCardLabel>
+                <MobileCardValue>{order.customerInfo.email}</MobileCardValue>
+              </MobileCardField>
+            )}
+            
+            <MobileCardActions>
+              <Button 
+                variant="secondary" 
+                as={Link} 
+                to={`/orders/${order._id}/edit`}
+                style={{ padding: '8px 16px', fontSize: '14px' }}
+              >
+                {t('edit')}
+              </Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => handleDownloadPDF(order)}
+                style={{ padding: '8px 16px', fontSize: '14px' }}
+              >
+                {t('pdf')}
+              </Button>
+              {order.status === 'draft' && (
+                <Button 
+                  variant="secondary" 
+                  onClick={() => handleSignOrder(order)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('signOrder')}
+                </Button>
+              )}
+              <Button 
+                variant="danger" 
+                onClick={() => setShowDeleteConfirm(order)}
+                style={{ padding: '8px 16px', fontSize: '14px' }}
+              >
+                {t('delete')}
+              </Button>
+            </MobileCardActions>
+          </MobileCard>
+        ))}
+      </MobileCardContainer>
 
       {ordersData?.meta && ordersData.meta.pages > 1 && (
         <PaginationContainer>
@@ -463,6 +690,11 @@ const Orders: React.FC = () => {
           </ConfirmationDialog>
         </ConfirmationModal>
       )}
+      
+      {/* Floating Action Button for Mobile */}
+      <FloatingActionButton as={Link} to="/orders/new">
+        +
+      </FloatingActionButton>
     </OrdersContainer>
   );
 };

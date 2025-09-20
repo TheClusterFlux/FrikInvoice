@@ -508,7 +508,7 @@ const translations: Record<'en' | 'af', Translations> = {
   },
   af: {
     // Navigation - Afrikaans translations
-    dashboard: 'Dashboard',
+    dashboard: 'Paneelbord',
     orders: 'Bestellings',
     clients: 'Kliënte',
     inventory: 'Voorraad',

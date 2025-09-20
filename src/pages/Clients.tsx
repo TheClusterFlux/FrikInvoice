@@ -17,6 +17,11 @@ import { useTranslation } from '../contexts/TranslationContext';
 const ClientsContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    padding-bottom: 80px; /* Space for floating button */
+  }
 `;
 
 const FiltersContainer = styled(Card)`
@@ -24,16 +29,149 @@ const FiltersContainer = styled(Card)`
   display: flex;
   gap: 16px;
   align-items: end;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
 `;
 
 const FilterGroup = styled.div`
   flex: 1;
 `;
 
+const FloatingActionButton = styled.button`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.6);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+`;
+
+const DesktopButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
 const ClientsTable = styled(Table)`
   margin-bottom: 20px;
   table-layout: fixed;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    display: none; /* Hide table on mobile */
+  }
+`;
+
+const TableContainer = styled.div`
+  overflow-x: auto;
+  margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    display: none; /* Hide table on mobile */
+  }
+`;
+
+const MobileCardContainer = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+    margin-bottom: 20px;
+  }
+`;
+
+const MobileCard = styled(Card)`
+  margin-bottom: 12px;
+  padding: 16px;
+  
+  @media (max-width: 768px) {
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+`;
+
+const MobileCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+`;
+
+const MobileCardTitle = styled.h4`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+`;
+
+const MobileCardStatus = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const MobileCardContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const MobileCardField = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const MobileCardLabel = styled.span`
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 4px;
+`;
+
+const MobileCardValue = styled.span`
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 400;
+`;
+
+const MobileCardActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
 `;
 
 const NameColumn = styled.td`
@@ -175,10 +313,6 @@ const PaginationContainer = styled.div`
   align-items: center;
 `;
 
-const ToggleButton = styled(Button)<{ variant: 'primary' | 'secondary' }>`
-  margin-bottom: 16px;
-`;
-
 const TableRow = styled.tr<{ alternating: boolean; index: number }>`
   background-color: ${props => 
     props.alternating && props.index % 2 === 1 
@@ -211,7 +345,7 @@ const Clients: React.FC = () => {
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Client | null>(null);
-  const [alternatingRows, setAlternatingRows] = useState(false);
+  const [alternatingRows] = useState(true);
 
   const queryClient = useQueryClient();
 
@@ -337,19 +471,14 @@ const Clients: React.FC = () => {
     <ClientsContainer>
       <PageHeader>
         <PageTitle>{t('clientManagement')}</PageTitle>
-        {user?.role === 'admin' && (
-          <Button onClick={() => setShowForm(true)}>{t('addNewClient')}</Button>
-        )}
+        <DesktopButtons>
+          {user?.role === 'admin' && (
+            <Button onClick={() => setShowForm(true)}>{t('addNewClient')}</Button>
+          )}
+        </DesktopButtons>
       </PageHeader>
 
       {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
-
-      <ToggleButton 
-        variant={alternatingRows ? 'primary' : 'secondary'}
-        onClick={() => setAlternatingRows(!alternatingRows)}
-      >
-        {alternatingRows ? t('disable') : t('enable')} {t('alternatingRowColors')}
-      </ToggleButton>
 
       <FiltersContainer>
         <FilterGroup>
@@ -511,7 +640,8 @@ const Clients: React.FC = () => {
         </Card>
       )}
 
-      <ClientsTable>
+      <TableContainer>
+        <ClientsTable>
         <thead>
           <tr>
             <NameHeader>{t('name')}</NameHeader>
@@ -568,7 +698,66 @@ const Clients: React.FC = () => {
             </TableRow>
           ))}
         </tbody>
-      </ClientsTable>
+        </ClientsTable>
+      </TableContainer>
+
+      {/* Mobile Card Layout */}
+      <MobileCardContainer>
+        {clientsData?.data.map((client, index) => (
+          <MobileCard key={client._id}>
+            <MobileCardHeader>
+              <MobileCardTitle>{client.name}</MobileCardTitle>
+              <MobileCardStatus>
+                <StatusBadge status={client.isActive ? 'active' : 'inactive'}>
+                  {client.isActive ? t('active') : t('inactive')}
+                </StatusBadge>
+              </MobileCardStatus>
+            </MobileCardHeader>
+            
+            <MobileCardContent>
+              <MobileCardField>
+                <MobileCardLabel>{t('contact')}</MobileCardLabel>
+                <MobileCardValue>
+                  {client.email && <div>{client.email}</div>}
+                  {client.phone && <div>{client.phone}</div>}
+                  {!client.email && !client.phone && <div>-</div>}
+                </MobileCardValue>
+              </MobileCardField>
+              
+              <MobileCardField>
+                <MobileCardLabel>{t('taxNumber')}</MobileCardLabel>
+                <MobileCardValue>{client.taxNumber || '-'}</MobileCardValue>
+              </MobileCardField>
+            </MobileCardContent>
+            
+            {client.address && formatAddress(client.address) && (
+              <MobileCardField style={{ gridColumn: '1 / -1', marginBottom: '12px' }}>
+                <MobileCardLabel>{t('address')}</MobileCardLabel>
+                <MobileCardValue>{formatAddress(client.address)}</MobileCardValue>
+              </MobileCardField>
+            )}
+            
+            {user?.role === 'admin' && (
+              <MobileCardActions>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => handleEdit(client)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('edit')}
+                </Button>
+                <Button 
+                  variant="danger" 
+                  onClick={() => setShowDeleteConfirm(client)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('delete')}
+                </Button>
+              </MobileCardActions>
+            )}
+          </MobileCard>
+        ))}
+      </MobileCardContainer>
 
       {clientsData?.meta && clientsData.meta.pages > 1 && (
         <PaginationContainer>
@@ -605,6 +794,13 @@ const Clients: React.FC = () => {
             </ConfirmationButtons>
           </ConfirmationDialog>
         </ConfirmationModal>
+      )}
+      
+      {/* Floating Action Button for Mobile */}
+      {user?.role === 'admin' && (
+        <FloatingActionButton onClick={() => setShowForm(true)}>
+          +
+        </FloatingActionButton>
       )}
     </ClientsContainer>
   );

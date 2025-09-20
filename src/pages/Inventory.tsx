@@ -18,6 +18,11 @@ import { useTranslation } from '../contexts/TranslationContext';
 const InventoryContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    padding-bottom: 80px; /* Space for floating button */
+  }
 `;
 
 const FiltersContainer = styled(Card)`
@@ -25,16 +30,164 @@ const FiltersContainer = styled(Card)`
   display: flex;
   gap: 16px;
   align-items: end;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
 `;
 
 const FilterGroup = styled.div`
   flex: 1;
 `;
 
+const FloatingActionButton = styled.button`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.6);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+`;
+
+const DesktopButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+`;
+
 const InventoryTable = styled(Table)`
   margin-bottom: 20px;
   table-layout: fixed;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+`;
+
+const TableContainer = styled.div`
+  overflow-x: auto;
+  margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    display: none; /* Hide table on mobile */
+  }
+`;
+
+const MobileCardContainer = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+    margin-bottom: 20px;
+  }
+`;
+
+const MobileCard = styled(Card)`
+  margin-bottom: 12px;
+  padding: 16px;
+  
+  @media (max-width: 768px) {
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+`;
+
+const MobileCardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+`;
+
+const MobileCardTitle = styled.h4`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+`;
+
+const MobileCardCode = styled.span`
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+`;
+
+const MobileCardContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const MobileCardField = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const MobileCardLabel = styled.span`
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 4px;
+`;
+
+const MobileCardValue = styled.span`
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 400;
+`;
+
+const MobileCardActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
 `;
 
 const CodeColumn = styled.td`
@@ -132,12 +285,6 @@ const SortableHeader = styled.th<{ sortable?: boolean }>`
 const TableRow = styled.tr<{ alternating?: boolean; index?: number }>`
   background-color: ${({ alternating, index }) => 
     alternating && index !== undefined && index % 2 === 1 ? 'var(--bg-primary)' : 'var(--bg-secondary)'};
-`;
-
-const ToggleButton = styled(Button)`
-  font-size: 12px;
-  padding: 6px 12px;
-  margin-bottom: 16px;
 `;
 
 const ValidationError = styled.div`
@@ -247,11 +394,6 @@ const ImportButtonContainer = styled.div`
   gap: 12px;
 `;
 
-const PaginationInfo = styled.span`
-  display: flex;
-  align-items: center;
-`;
-
 const Inventory: React.FC = () => {
   const { user } = useAuth();
   const { isDark } = useTheme();
@@ -285,7 +427,7 @@ const Inventory: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<InventoryItem | null>(null);
   const [sortField, setSortField] = useState<string>('description'); // Default sort by description
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [alternatingRows, setAlternatingRows] = useState(false);
+  const [alternatingRows] = useState(true);
   const [availableGroups, setAvailableGroups] = useState<string[]>([]);
   const [itemsPerPage, setItemsPerPage] = useState(10); // Reduced default items per page
 
@@ -540,23 +682,16 @@ const Inventory: React.FC = () => {
     <InventoryContainer>
       <PageHeader>
         <PageTitle>{t('inventoryManagement')}</PageTitle>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <DesktopButtons>
           <Button onClick={exportCSV}>{t('exportCSV')}</Button>
           <Button onClick={() => setShowImportModal(true)}>{t('importCSV')}</Button>
           {user?.role === 'admin' && (
             <Button onClick={() => setShowForm(true)}>{t('addNewItem')}</Button>
           )}
-        </div>
+        </DesktopButtons>
       </PageHeader>
 
       {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
-
-      <ToggleButton 
-        variant={alternatingRows ? 'primary' : 'secondary'}
-        onClick={() => setAlternatingRows(!alternatingRows)}
-      >
-        {alternatingRows ? t('disable') : t('enable')} {t('alternatingRowColors')}
-      </ToggleButton>
 
       <FiltersContainer>
         <FilterGroup>
@@ -598,7 +733,7 @@ const Inventory: React.FC = () => {
         <Card>
           <h3>{editingItem ? t('editItem') : t('addNewItem')}</h3>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <FormGrid>
               <div>
                 <label>{t('itemCode')} *</label>
                 <Input
@@ -635,7 +770,7 @@ const Inventory: React.FC = () => {
                   required
                 />
               </div>
-            </div>
+            </FormGrid>
             {formErrors.length > 0 && (
               <ValidationError>
                 <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Please fix the following errors:</div>
@@ -666,7 +801,8 @@ const Inventory: React.FC = () => {
         </Card>
       )}
 
-      <InventoryTable>
+      <TableContainer>
+        <InventoryTable>
         <thead>
           <tr>
             <CodeHeader>
@@ -726,7 +862,59 @@ const Inventory: React.FC = () => {
             </TableRow>
           ))}
         </tbody>
-      </InventoryTable>
+        </InventoryTable>
+      </TableContainer>
+
+      {/* Mobile Card Layout */}
+      <MobileCardContainer>
+        {inventoryData?.data.map((item, index) => (
+          <MobileCard key={item._id}>
+            <MobileCardHeader>
+              <MobileCardTitle>
+                {highlightSearchTerm(item.description, search)}
+              </MobileCardTitle>
+              <MobileCardCode>
+                {highlightSearchTerm(item.code, search)}
+              </MobileCardCode>
+            </MobileCardHeader>
+            
+            <MobileCardContent>
+              <MobileCardField>
+                <MobileCardLabel>{t('group')}</MobileCardLabel>
+                <MobileCardValue>
+                  {highlightSearchTerm(item.group, search)}
+                </MobileCardValue>
+              </MobileCardField>
+              
+              <MobileCardField>
+                <MobileCardLabel>{t('unit')}</MobileCardLabel>
+                <MobileCardValue>
+                  {highlightSearchTerm(item.unit, search)}
+                </MobileCardValue>
+              </MobileCardField>
+            </MobileCardContent>
+            
+            {user?.role === 'admin' && (
+              <MobileCardActions>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => handleEdit(item)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('edit')}
+                </Button>
+                <Button 
+                  variant="danger" 
+                  onClick={() => setShowDeleteConfirm(item)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('delete')}
+                </Button>
+              </MobileCardActions>
+            )}
+          </MobileCard>
+        ))}
+      </MobileCardContainer>
 
       {inventoryData?.meta && inventoryData.meta.pages > 1 && (
         <PaginationContainer>
@@ -866,6 +1054,13 @@ const Inventory: React.FC = () => {
             </ConfirmationButtons>
           </ConfirmationDialog>
         </ConfirmationModal>
+      )}
+      
+      {/* Floating Action Button for Mobile */}
+      {user?.role === 'admin' && (
+        <FloatingActionButton onClick={() => setShowForm(true)}>
+          +
+        </FloatingActionButton>
       )}
     </InventoryContainer>
   );
