@@ -1431,13 +1431,19 @@ const OrderFormPage: React.FC = () => {
   };
 
   const addItem = () => {
-    // Validate that the current item (if any) is not empty before adding a new one
-    if (formData.items.length > 0) {
-      const lastItem = formData.items[formData.items.length - 1];
-      if (!lastItem.inventoryId || !lastItem.quantity || lastItem.quantity <= 0 || !lastItem.unitPrice || lastItem.unitPrice <= 0) {
-        setFormError('Please complete the current item before adding a new one.');
-        return;
-      }
+    // Check if there's already an empty/new item that hasn't been completed
+    // An empty item is one that has no inventoryId and default values AND was just added
+    const hasEmptyNewItem = formData.items.some((item, index) => 
+      !item.inventoryId && 
+      (!item.quantity || item.quantity <= 1) && 
+      (!item.unitPrice || item.unitPrice <= 0) &&
+      // Only consider it a "new empty item" if it's the last item (most recently added)
+      index === formData.items.length - 1
+    );
+    
+    if (hasEmptyNewItem) {
+      setFormError('Please complete the current item before adding a new one.');
+      return;
     }
     
     // Clear any existing form errors
@@ -2009,7 +2015,30 @@ const OrderFormPage: React.FC = () => {
                 <ItemCard 
                   key={index} 
                   isExpanded={isExpanded}
-                  onClick={() => setExpandedItemIndex(isExpanded ? null : index)}
+                  onClick={() => {
+                    if (isExpanded) {
+                      setExpandedItemIndex(null);
+                    } else {
+                      // Before expanding this item, clean up any empty new items
+                      const hasEmptyNewItem = formData.items.some((item, idx) => 
+                        !item.inventoryId && 
+                        (!item.quantity || item.quantity <= 1) && 
+                        (!item.unitPrice || item.unitPrice <= 0) &&
+                        idx === formData.items.length - 1 // Only the last item (newly added)
+                      );
+                      
+                      if (hasEmptyNewItem) {
+                        // Remove the empty new item before expanding the clicked item
+                        const newItems = formData.items.slice(0, -1); // Remove last item
+                        setFormData({ ...formData, items: newItems });
+                        // Adjust the index if we're clicking on an item after the removed one
+                        const adjustedIndex = index >= newItems.length ? index - 1 : index;
+                        setExpandedItemIndex(adjustedIndex);
+                      } else {
+                        setExpandedItemIndex(index);
+                      }
+                    }
+                  }}
                 >
                   {!isExpanded && selectedInventoryItem && (
                     <CollapsedItemSummary>
