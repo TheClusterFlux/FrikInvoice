@@ -7,6 +7,7 @@ export interface InventoryItem {
   description: string;
   group: string;
   unit: string;
+  basePrice?: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -21,6 +22,7 @@ export interface CreateInventoryData {
   description: string;
   group: string;
   unit: string;
+  basePrice?: number;
 }
 
 export interface UpdateInventoryData extends Partial<CreateInventoryData> {
@@ -45,6 +47,7 @@ export const inventoryService = {
     search?: string;
     sortField?: string;
     sortDirection?: string;
+    isActive?: boolean;
   }): Promise<InventoryListResponse> {
     logger.debug('InventoryService', 'Fetching inventory', {
       params,

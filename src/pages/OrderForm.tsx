@@ -295,8 +295,13 @@ const SelectedItemGroup = styled.div`
 
 const ItemDetailsSection = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 20px;
+  
+  @media (max-width: 1300px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -326,6 +331,27 @@ const ModernInput = styled(Input)`
   &:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+`;
+
+const EditableInput = styled(Input)`
+  border-radius: 8px;
+  border: 2px solid var(--primary-color, #007bff);
+  padding: 12px;
+  font-size: 14px;
+  background: var(--input-bg, var(--bg-secondary));
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    border-color: var(--primary-dark, #0056b3);
+    box-shadow: 0 0 0 3px var(--primary-shadow, rgba(0, 123, 255, 0.2));
+    background: var(--input-bg-focus, var(--bg-secondary));
+  }
+  
+  &:hover {
+    border-color: var(--primary-dark, #0056b3);
   }
 `;
 
@@ -383,12 +409,43 @@ const ModernPriceInput = styled.input`
 const TotalPriceDisplay = styled.div`
   padding: 12px;
   background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-weight: 600;
   font-size: 16px;
   text-align: center;
+  opacity: 0.8;
+`;
+
+const ReadOnlyPriceGroup = styled.div`
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  opacity: 0.8;
+`;
+
+const ReadOnlyPriceInput = styled.div`
+  flex: 1;
+  padding: 12px 12px 12px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: right;
+  font-weight: 500;
+  
+  /* Hide number input arrows */
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  /* Firefox */
+  &[type=number] {
+    -moz-appearance: textfield;
+  }
 `;
 
 const AddItemCard = styled.button`
@@ -420,6 +477,176 @@ const AddItemText = styled.div`
   color: var(--text-primary);
   font-weight: 500;
   font-size: 14px;
+`;
+
+const CancelItemButton = styled.button`
+  background: none;
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #dc3545;
+    color: white;
+  }
+`;
+
+// Clean Customer Section Components
+const CustomerCard = styled.div`
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+`;
+
+const CustomerHeader = styled.div`
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+`;
+
+const CustomerTitle = styled.h3`
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+`;
+
+const CustomerSubtitle = styled.p`
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+`;
+
+const CustomerContent = styled.div`
+  padding: 24px;
+`;
+
+const ClientSearchSection = styled.div`
+  margin-bottom: 24px;
+`;
+
+const SearchLabel = styled.label`
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-size: 14px;
+`;
+
+const SearchHint = styled.div`
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+`;
+
+const OrDivider = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+  }
+  
+  span {
+    padding: 0 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+  }
+`;
+
+const SelectedClientBanner = styled.div`
+  background: var(--success-bg, #e8f5e8);
+  border: 1px solid var(--success-border, #4caf50);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const SelectedClientInfo = styled.div`
+  color: var(--success-text, #2e7d32);
+  font-weight: 600;
+`;
+
+const ClearSelectionButton = styled.button`
+  background: none;
+  border: 1px solid var(--success-border, #4caf50);
+  color: var(--success-border, #4caf50);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: var(--success-border, #4caf50);
+    color: var(--bg-secondary);
+  }
+`;
+
+const CollapsedCustomerSummary = styled.div`
+  padding: 12px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: var(--primary-color, #007bff);
+  }
+`;
+
+const CustomerSummaryName = styled.div`
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+`;
+
+const CustomerSummaryDetails = styled.div`
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+`;
+
+const CustomerDetailsSection = styled.div<{ isCollapsed: boolean }>`
+  max-height: ${({ isCollapsed }) => isCollapsed ? '0' : '2000px'};
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  opacity: ${({ isCollapsed }) => isCollapsed ? '0' : '1'};
+`;
+
+const ExpandButton = styled.button`
+  background: none;
+  border: 1px solid var(--primary-color, #007bff);
+  color: var(--primary-color, #007bff);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+  
+  &:hover {
+    background: var(--primary-color, #007bff);
+    color: var(--bg-secondary);
+  }
 `;
 
 // Collapsed Item Summary Component
@@ -1015,20 +1242,23 @@ const OrderFormPage: React.FC = () => {
       },
     },
     items: [],
-    taxRate: 15,
+    taxRate: 0,
     notes: '',
   });
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [loading, setLoading] = useState(false);
   const [expandedItemIndex, setExpandedItemIndex] = useState<number | null>(0); // First item expanded by default
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [isCustomerSectionCollapsed, setIsCustomerSectionCollapsed] = useState(false);
+  const [touchedFields, setTouchedFields] = useState<{[key: string]: boolean}>({});
 
   const queryClient = useQueryClient();
 
-  // Fetch inventory for item selection - get all items
+  // Fetch inventory for item selection - get only active items
   const { data: inventoryData, error: inventoryError, isLoading: inventoryLoading } = useQuery(
-    'inventory-unlimited',
-    () => inventoryService.getInventory(),
+    'inventory-active',
+    () => inventoryService.getInventory({ isActive: true }),
     {
       onSuccess: (data) => {
         logger.info('OrderForm', 'Inventory data loaded successfully', {
@@ -1167,9 +1397,52 @@ const OrderFormPage: React.FC = () => {
         },
       },
     });
+    setSelectedClientId(client._id);
+    // Mark fields as touched since they now have valid data
+    setTouchedFields(prev => ({
+      ...prev,
+      customerName: true,
+      customerEmail: true,
+      customerPhone: true
+    }));
+    // Auto-collapse after client selection to focus on items
+    setIsCustomerSectionCollapsed(true);
+  };
+
+  // Function to clear client selection
+  const handleClearClientSelection = () => {
+    setSelectedClientId(null);
+    setIsCustomerSectionCollapsed(false);
+    // Reset touched fields when clearing
+    setTouchedFields({});
+    // Clear form data
+    setFormData(prev => ({
+      ...prev,
+      customerInfo: {
+        name: '', email: '', phone: '',
+        address: { street: '', city: '', state: '', zipCode: '', country: '' }
+      }
+    }));
+  };
+
+  // Function to mark field as touched
+  const markFieldAsTouched = (fieldName: string) => {
+    setTouchedFields(prev => ({ ...prev, [fieldName]: true }));
   };
 
   const addItem = () => {
+    // Validate that the current item (if any) is not empty before adding a new one
+    if (formData.items.length > 0) {
+      const lastItem = formData.items[formData.items.length - 1];
+      if (!lastItem.inventoryId || !lastItem.quantity || lastItem.quantity <= 0 || !lastItem.unitPrice || lastItem.unitPrice <= 0) {
+        setFormError('Please complete the current item before adding a new one.');
+        return;
+      }
+    }
+    
+    // Clear any existing form errors
+    setFormError('');
+    
     const newItemIndex = formData.items.length;
     setFormData({
       ...formData,
@@ -1193,6 +1466,14 @@ const OrderFormPage: React.FC = () => {
     } else if (expandedItemIndex !== null && expandedItemIndex > index) {
       // If we removed an item before the expanded one, adjust the index
       setExpandedItemIndex(expandedItemIndex - 1);
+    }
+  };
+
+  const cancelNewItem = (index: number) => {
+    const item = formData.items[index];
+    // Only allow canceling if the item is empty (new item mode)
+    if (!item.inventoryId && (!item.quantity || item.quantity <= 1) && (!item.unitPrice || item.unitPrice <= 0)) {
+      removeItem(index);
     }
   };
 
@@ -1294,27 +1575,27 @@ const OrderFormPage: React.FC = () => {
   const validateCustomerName = (name: string | undefined) => {
     if (!name || !name.trim()) return 'Customer name is required';
     if (name.length > 200) return 'Customer name must be less than 200 characters';
-    return '';
+    return null;
   };
 
   const validateEmail = (email: string | undefined) => {
     if (email && !/^\S+@\S+\.\S+$/.test(email)) return 'Invalid email format';
-    return '';
+    return null;
   };
 
   const validatePhone = (phone: string | undefined) => {
     if (phone && phone.length > 20) return 'Phone must be less than 20 characters';
-    return '';
+    return null;
   };
 
   const validateTaxRate = (rate: number | undefined) => {
     if (rate !== undefined && (rate < 0 || rate > 100)) return 'Tax rate must be between 0 and 100';
-    return '';
+    return null;
   };
 
   const validateNotes = (notes: string | undefined) => {
     if (notes && notes.length > 1000) return 'Notes must be less than 1000 characters';
-    return '';
+    return null;
   };
 
   const validateItem = (item: any, index: number) => {
@@ -1527,145 +1808,195 @@ const OrderFormPage: React.FC = () => {
       <h1>{isEditing ? 'Edit order' : 'Create new order'}</h1>
       
       <OrderForm onSubmit={handleSubmit}>
-        <Card>
-          <SectionTitle>Customer Information</SectionTitle>
+        <CustomerCard>
+          <CustomerHeader>
+            <CustomerTitle>Customer Information</CustomerTitle>
+            <CustomerSubtitle>Search for an existing client or enter details manually</CustomerSubtitle>
+          </CustomerHeader>
           
-          {/* Client Selector */}
-          {clientsData?.data && (
-            <ClientSelector 
-              clients={clientsData.data} 
-              onClientSelect={handleClientSelect}
-            />
+          {/* Show collapsed summary when collapsed */}
+          {isCustomerSectionCollapsed && formData.customerInfo.name && (
+            <CollapsedCustomerSummary onClick={() => setIsCustomerSectionCollapsed(false)}>
+              <CustomerSummaryName>{formData.customerInfo.name}</CustomerSummaryName>
+              <CustomerSummaryDetails>
+                {formData.customerInfo.email && <span>{formData.customerInfo.email}</span>}
+                {formData.customerInfo.phone && <span>{formData.customerInfo.phone}</span>}
+                {formData.customerInfo.address?.city && <span>{formData.customerInfo.address.city}</span>}
+              </CustomerSummaryDetails>
+            </CollapsedCustomerSummary>
           )}
           
-          <FormGroup>
-            <Label>Customer Name *</Label>
-            <Input
-              type="text"
-              value={formData.customerInfo.name}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  customerInfo: { ...formData.customerInfo, name: e.target.value },
-                })
-              }
-              required
-            />
-            {validateCustomerName(formData.customerInfo.name) && (
-              <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
-                {validateCustomerName(formData.customerInfo.name)}
+          <CustomerDetailsSection isCollapsed={isCustomerSectionCollapsed}>
+            <CustomerContent>
+              {/* Show selected client banner if client is selected */}
+              {selectedClientId && (
+                <SelectedClientBanner>
+                  <SelectedClientInfo>
+                    ✅ Client loaded from database: {formData.customerInfo.name}
+                  </SelectedClientInfo>
+                  <ClearSelectionButton onClick={handleClearClientSelection}>
+                    Clear & Enter Manually
+                  </ClearSelectionButton>
+                </SelectedClientBanner>
+              )}
+              
+              {/* Client Search Section - Only show if no client selected */}
+              {!selectedClientId && clientsData?.data && (
+                <ClientSearchSection>
+                  <SearchLabel>Search Existing Clients</SearchLabel>
+                  <SearchHint>Start typing to find an existing client, or skip to enter details manually</SearchHint>
+                  <ClientSelector 
+                    clients={clientsData.data} 
+                    onClientSelect={handleClientSelect}
+                  />
+                  <OrDivider>
+                    <span>OR</span>
+                  </OrDivider>
+                </ClientSearchSection>
+              )}
+              
+              {/* Customer Details Form - Always visible */}
+              <div>
+              <FormGroup>
+                <Label>Customer Name *</Label>
+                <Input
+                  type="text"
+                  value={formData.customerInfo.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      customerInfo: { ...formData.customerInfo, name: e.target.value },
+                    })
+                  }
+                  onBlur={() => markFieldAsTouched('customerName')}
+                  onFocus={() => markFieldAsTouched('customerName')}
+                />
+                {touchedFields.customerName && validateCustomerName(formData.customerInfo.name) && (
+                  <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
+                    {validateCustomerName(formData.customerInfo.name)}
+                  </div>
+                )}
+              </FormGroup>
+              
+              <Grid columns={2}>
+                <FormGroup>
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={formData.customerInfo.email}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        customerInfo: { ...formData.customerInfo, email: e.target.value },
+                      })
+                    }
+                    onBlur={() => markFieldAsTouched('customerEmail')}
+                    onFocus={() => markFieldAsTouched('customerEmail')}
+                  />
+                  {touchedFields.customerEmail && validateEmail(formData.customerInfo.email) && (
+                    <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
+                      {validateEmail(formData.customerInfo.email)}
+                    </div>
+                  )}
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>Phone</Label>
+                  <Input
+                    type="tel"
+                    value={formData.customerInfo.phone}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        customerInfo: { ...formData.customerInfo, phone: e.target.value },
+                      })
+                    }
+                    onBlur={() => markFieldAsTouched('customerPhone')}
+                    onFocus={() => markFieldAsTouched('customerPhone')}
+                  />
+                  {touchedFields.customerPhone && validatePhone(formData.customerInfo.phone) && (
+                    <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
+                      {validatePhone(formData.customerInfo.phone)}
+                    </div>
+                  )}
+                </FormGroup>
+              </Grid>
+              
+              <SectionTitle style={{ marginTop: '24px' }}>Address</SectionTitle>
+              
+              <FormGroup>
+                <Label>Street</Label>
+                <Input
+                  type="text"
+                  value={formData.customerInfo.address?.street || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      customerInfo: {
+                        ...formData.customerInfo,
+                        address: { ...formData.customerInfo.address, street: e.target.value },
+                      },
+                    })
+                  }
+                />
+              </FormGroup>
+              
+              <Grid columns={3}>
+                <FormGroup>
+                  <Label>City</Label>
+                  <Input
+                    type="text"
+                    value={formData.customerInfo.address?.city || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        customerInfo: {
+                          ...formData.customerInfo,
+                          address: { ...formData.customerInfo.address, city: e.target.value },
+                        },
+                      })
+                    }
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>Province</Label>
+                  <Input
+                    type="text"
+                    value={formData.customerInfo.address?.state || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        customerInfo: {
+                          ...formData.customerInfo,
+                          address: { ...formData.customerInfo.address, state: e.target.value },
+                        },
+                      })
+                    }
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>ZIP Code</Label>
+                  <Input
+                    type="text"
+                    value={formData.customerInfo.address?.zipCode || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        customerInfo: {
+                          ...formData.customerInfo,
+                          address: { ...formData.customerInfo.address, zipCode: e.target.value },
+                        },
+                      })
+                    }
+                  />
+                </FormGroup>
+              </Grid>
               </div>
-            )}
-          </FormGroup>
-          
-          <FormGroup>
-            <Label>Email</Label>
-            <Input
-              type="email"
-              value={formData.customerInfo.email}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  customerInfo: { ...formData.customerInfo, email: e.target.value },
-                })
-              }
-            />
-            {validateEmail(formData.customerInfo.email) && (
-              <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
-                {validateEmail(formData.customerInfo.email)}
-              </div>
-            )}
-          </FormGroup>
-          
-          <FormGroup>
-            <Label>Phone</Label>
-            <Input
-              type="tel"
-              value={formData.customerInfo.phone}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  customerInfo: { ...formData.customerInfo, phone: e.target.value },
-                })
-              }
-            />
-            {validatePhone(formData.customerInfo.phone) && (
-              <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
-                {validatePhone(formData.customerInfo.phone)}
-              </div>
-            )}
-          </FormGroup>
-          
-          <SectionTitle>Address</SectionTitle>
-          
-          <FormGroup>
-            <Label>Street</Label>
-            <Input
-              type="text"
-              value={formData.customerInfo.address?.street || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  customerInfo: {
-                    ...formData.customerInfo,
-                    address: { ...formData.customerInfo.address, street: e.target.value },
-                  },
-                })
-              }
-            />
-          </FormGroup>
-          
-          <FormGroup>
-            <Label>City</Label>
-            <Input
-              type="text"
-              value={formData.customerInfo.address?.city || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  customerInfo: {
-                    ...formData.customerInfo,
-                    address: { ...formData.customerInfo.address, city: e.target.value },
-                  },
-                })
-              }
-            />
-          </FormGroup>
-          
-          <FormGroup>
-            <Label>State</Label>
-            <Input
-              type="text"
-              value={formData.customerInfo.address?.state || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  customerInfo: {
-                    ...formData.customerInfo,
-                    address: { ...formData.customerInfo.address, state: e.target.value },
-                  },
-                })
-              }
-            />
-          </FormGroup>
-          
-          <FormGroup>
-            <Label>ZIP Code</Label>
-            <Input
-              type="text"
-              value={formData.customerInfo.address?.zipCode || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  customerInfo: {
-                    ...formData.customerInfo,
-                    address: { ...formData.customerInfo.address, zipCode: e.target.value },
-                  },
-                })
-              }
-            />
-          </FormGroup>
-        </Card>
+            </CustomerContent>
+          </CustomerDetailsSection>
+        </CustomerCard>
 
         <Card>
           <SectionTitle>Order Items</SectionTitle>
@@ -1716,24 +2047,32 @@ const OrderFormPage: React.FC = () => {
                             currentInventoryId: item.inventoryId
                           });
                           
-                          // Find the selected item to get the unit
+                          // Find the selected item to get the unit and base price
                           const selectedItem = inventoryData?.data.find(inv => inv._id === inventoryId);
-                          logger.debug('OrderForm', 'Looking for selected item to set unit', {
+                          logger.debug('OrderForm', 'Looking for selected item to set unit and price', {
                             inventoryId,
                             found: !!selectedItem,
                             selectedItem: selectedItem ? {
                               id: selectedItem._id,
                               code: selectedItem.code,
-                              unit: selectedItem.unit
+                              unit: selectedItem.unit,
+                              basePrice: selectedItem.basePrice
                             } : null
                           });
                           
-                          // Update both inventoryId and unit in a single operation
+                          // Calculate price with 30% markup
+                          const basePrice = selectedItem?.basePrice || 0;
+                          const markupPrice = basePrice * 1.30; // 30% markup
+                          
+                          // Update inventoryId, unit, and unitPrice in a single operation
                           const newItems = [...formData.items];
                           newItems[index] = { 
                             ...newItems[index], 
                             inventoryId: inventoryId,
-                            unit: selectedItem?.unit || ''
+                            unit: selectedItem?.unit || '',
+                            unitPrice: markupPrice,
+                            basePrice: basePrice,
+                            markup: 30 // Default 30% markup
                           };
                           setFormData({ ...formData, items: newItems });
                           
@@ -1760,7 +2099,7 @@ const OrderFormPage: React.FC = () => {
                     <ItemDetailsSection>
                       <ItemDetailGroup>
                         <ItemDetailLabel>Quantity</ItemDetailLabel>
-                        <ModernInput
+                        <EditableInput
                           type="number"
                           min="1"
                           value={item.quantity}
@@ -1772,19 +2111,40 @@ const OrderFormPage: React.FC = () => {
                       </ItemDetailGroup>
 
                       <ItemDetailGroup>
-                        <ItemDetailLabel>Unit Price</ItemDetailLabel>
-                        <PriceInputGroup>
+                        <ItemDetailLabel>Markup (%)</ItemDetailLabel>
+                        <EditableInput
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={item.markup !== undefined ? item.markup : 30}
+                          onChange={(e) => {
+                            const inputValue = e.target.value;
+                            const newMarkup = inputValue === '' ? 0 : parseFloat(inputValue);
+                            const basePrice = item.basePrice || 0;
+                            const newUnitPrice = basePrice * (1 + newMarkup / 100);
+                            
+                            const newItems = [...formData.items];
+                            newItems[index] = { 
+                              ...newItems[index], 
+                              markup: newMarkup,
+                              unitPrice: newUnitPrice
+                            };
+                            setFormData({ ...formData, items: newItems });
+                          }}
+                          placeholder="30"
+                        />
+                        <ItemUnitDisplay>Base: {formatCurrency(item.basePrice || 0)}</ItemUnitDisplay>
+                      </ItemDetailGroup>
+
+                      <ItemDetailGroup>
+                        <ItemDetailLabel>Unit Price (Read-only)</ItemDetailLabel>
+                        <ReadOnlyPriceGroup>
                           <CurrencySymbol>R</CurrencySymbol>
-                          <ModernPriceInput
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={item.unitPrice || 0}
-                            onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                            required
-                            placeholder="0.00"
-                          />
-                        </PriceInputGroup>
+                          <ReadOnlyPriceInput>
+                            {(item.unitPrice || 0).toFixed(2)}
+                          </ReadOnlyPriceInput>
+                        </ReadOnlyPriceGroup>
+                        <ItemUnitDisplay>Calculated from base price + markup</ItemUnitDisplay>
                       </ItemDetailGroup>
 
                       <ItemDetailGroup>
@@ -1794,6 +2154,21 @@ const OrderFormPage: React.FC = () => {
                         </TotalPriceDisplay>
                       </ItemDetailGroup>
                     </ItemDetailsSection>
+                    
+                    {/* Show cancel button for empty items (new item mode) */}
+                    {!item.inventoryId && (!item.quantity || item.quantity <= 1) && (!item.unitPrice || item.unitPrice <= 0) && (
+                      <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                        <CancelItemButton 
+                          type="button" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            cancelNewItem(index);
+                          }}
+                        >
+                          Cancel Item
+                        </CancelItemButton>
+                      </div>
+                    )}
                   </ItemCardContent>
                 </ItemCard>
               );

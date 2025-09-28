@@ -696,14 +696,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </Sidebar>
       
       <MainContent sidebarCollapsed={sidebarCollapsed} isDark={isDark}>
-        <Header isDark={isDark} hideTitle={!isDashboard}>
-          <h1>{t('orderManagementSystem')}</h1>
-          {showWelcome && (
+        {showWelcome && (
+          <Header isDark={isDark} hideTitle={!isDashboard}>
+            <h1>{t('orderManagementSystem')}</h1>
             <UserInfo isDark={isDark}>
               <UserName isDark={isDark}>{t('welcomeBack')}, {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1).toLowerCase() : 'User'}</UserName>
             </UserInfo>
-          )}
-        </Header>
+          </Header>
+        )}
         {children}
       </MainContent>
     </LayoutContainer>

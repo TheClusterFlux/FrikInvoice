@@ -52,6 +52,8 @@ export interface CreateOrderData {
     quantity: number;
     unit: string;
     unitPrice: number;
+    basePrice?: number;
+    markup?: number;
     calculationBreakdown?: string;
   }>;
   taxRate?: number;

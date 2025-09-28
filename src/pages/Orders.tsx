@@ -22,7 +22,7 @@ const OrdersContainer = styled.div`
   margin: 0 auto;
   position: relative;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     padding-bottom: 80px; /* Space for floating button */
   }
 `;
@@ -47,7 +47,7 @@ const FilterGroup = styled.div`
 const FloatingActionButton = styled.button`
   display: none;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     display: flex;
     position: fixed;
     bottom: 20px;
@@ -81,7 +81,7 @@ const DesktopButtons = styled.div`
   display: flex;
   gap: 12px;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     display: none;
   }
 `;
@@ -91,8 +91,8 @@ const OrdersTable = styled(Table)`
   table-layout: fixed;
   width: 100%;
   
-  @media (max-width: 768px) {
-    display: none; /* Hide table on mobile */
+  @media (max-width: 1300px) {
+    display: none; /* Hide table on small screens */
   }
 `;
 
@@ -100,15 +100,15 @@ const TableContainer = styled.div`
   overflow-x: auto;
   margin-bottom: 20px;
   
-  @media (max-width: 768px) {
-    display: none; /* Hide table on mobile */
+  @media (max-width: 1300px) {
+    display: none; /* Hide table on small screens */
   }
 `;
 
 const MobileCardContainer = styled.div`
   display: none;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     display: block;
     margin-bottom: 20px;
   }
@@ -187,22 +187,22 @@ const InvoiceColumn = styled.td`
 `;
 
 const CustomerColumn = styled.td`
-  width: 25%;
+  width: 15%;
   word-break: break-word;
 `;
 
 const ItemsColumn = styled.td`
-  width: 10%;
+  width: 8%;
   word-break: break-word;
 `;
 
 const TotalColumn = styled.td`
-  width: 15%;
+  width: 12%;
   word-break: break-word;
 `;
 
 const DateColumn = styled.td`
-  width: 15%;
+  width: 12%;
   word-break: break-word;
 `;
 
@@ -212,7 +212,7 @@ const StatusColumn = styled.td`
 `;
 
 const ActionsColumn = styled.td`
-  width: 10%;
+  width: 28%;
   text-align: right;
   padding-right: 16px;
 `;
@@ -222,19 +222,19 @@ const InvoiceHeader = styled.th`
 `;
 
 const CustomerHeader = styled.th`
-  width: 25%;
+  width: 15%;
 `;
 
 const ItemsHeader = styled.th`
-  width: 10%;
+  width: 8%;
 `;
 
 const TotalHeader = styled.th`
-  width: 15%;
+  width: 12%;
 `;
 
 const DateHeader = styled.th`
-  width: 15%;
+  width: 12%;
 `;
 
 const StatusHeader = styled.th`
@@ -242,14 +242,15 @@ const StatusHeader = styled.th`
 `;
 
 const ActionsHeader = styled.th`
-  width: 10%;
+  width: 28%;
   text-align: right;
 `;
 
 const ActionButtons = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 `;
 
 const SuccessMessage = styled.div`
@@ -292,6 +293,29 @@ const PaginationContainer = styled.div`
   justify-content: center;
   gap: 12px;
   align-items: center;
+`;
+
+const TableRow = styled.tr<{ index: number }>`
+  background-color: ${props => 
+    props.index % 2 === 1 
+      ? 'var(--table-row-alt, rgba(0, 0, 0, 0.02))' 
+      : 'transparent'
+  };
+  
+  /* Dark mode alternating rows */
+  @media (prefers-color-scheme: dark) {
+    background-color: ${props => 
+      props.index % 2 === 1 
+        ? 'var(--table-row-alt, rgba(255, 255, 255, 0.03))' 
+        : 'transparent'
+    };
+  }
+  
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: var(--table-row-hover, rgba(0, 123, 255, 0.05));
+  }
 `;
 
 const FilterLabel = styled.label`
@@ -442,8 +466,8 @@ const Orders: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {ordersData?.data.map((order) => (
-            <tr key={order._id}>
+          {ordersData?.data.map((order, index) => (
+            <TableRow key={order._id} index={index}>
               <InvoiceColumn>
                 <strong>{order.invoiceNumber}</strong>
               </InvoiceColumn>
@@ -504,7 +528,7 @@ const Orders: React.FC = () => {
                   </Button>
                 </ActionButtons>
               </ActionsColumn>
-            </tr>
+            </TableRow>
           ))}
         </tbody>
         </OrdersTable>

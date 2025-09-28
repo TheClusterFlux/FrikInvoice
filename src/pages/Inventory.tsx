@@ -20,7 +20,7 @@ const InventoryContainer = styled.div`
   margin: 0 auto;
   position: relative;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     padding-bottom: 80px; /* Space for floating button */
   }
 `;
@@ -45,7 +45,7 @@ const FilterGroup = styled.div`
 const FloatingActionButton = styled.button`
   display: none;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     display: flex;
     position: fixed;
     bottom: 20px;
@@ -79,7 +79,7 @@ const DesktopButtons = styled.div`
   display: flex;
   gap: 12px;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     display: none;
   }
 `;
@@ -100,8 +100,8 @@ const InventoryTable = styled(Table)`
   table-layout: fixed;
   width: 100%;
   
-  @media (max-width: 768px) {
-    font-size: 14px;
+  @media (max-width: 1300px) {
+    display: none; /* Hide table on small screens */
   }
 `;
 
@@ -109,15 +109,15 @@ const TableContainer = styled.div`
   overflow-x: auto;
   margin-bottom: 20px;
   
-  @media (max-width: 768px) {
-    display: none; /* Hide table on mobile */
+  @media (max-width: 1300px) {
+    display: none; /* Hide table on small screens */
   }
 `;
 
 const MobileCardContainer = styled.div`
   display: none;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     display: block;
     margin-bottom: 20px;
   }
@@ -196,7 +196,7 @@ const CodeColumn = styled.td`
 `;
 
 const DescriptionColumn = styled.td`
-  width: 55%;
+  width: 40%;
   word-break: break-word;
 `;
 
@@ -207,6 +207,14 @@ const GroupColumn = styled.td`
 
 const UnitColumn = styled.td`
   width: 10%;
+  word-break: break-word;
+`;
+
+const PriceColumn = styled.td`
+  width: 15%;
+  text-align: right;
+  font-family: monospace;
+  font-weight: bold;
   word-break: break-word;
 `;
 
@@ -221,7 +229,7 @@ const CodeHeader = styled.th`
 `;
 
 const DescriptionHeader = styled.th`
-  width: 55%;
+  width: 40%;
 `;
 
 const GroupHeader = styled.th`
@@ -230,6 +238,11 @@ const GroupHeader = styled.th`
 
 const UnitHeader = styled.th`
   width: 10%;
+`;
+
+const PriceHeader = styled.th`
+  width: 15%;
+  text-align: right;
 `;
 
 const ActionsHeader = styled.th`
@@ -284,7 +297,25 @@ const SortableHeader = styled.th<{ sortable?: boolean }>`
 
 const TableRow = styled.tr<{ alternating?: boolean; index?: number }>`
   background-color: ${({ alternating, index }) => 
-    alternating && index !== undefined && index % 2 === 1 ? 'var(--bg-primary)' : 'var(--bg-secondary)'};
+    alternating && index !== undefined && index % 2 === 1 
+      ? 'var(--table-row-alt, rgba(0, 0, 0, 0.02))' 
+      : 'transparent'
+  };
+  
+  /* Dark mode alternating rows */
+  @media (prefers-color-scheme: dark) {
+    background-color: ${({ alternating, index }) => 
+      alternating && index !== undefined && index % 2 === 1 
+        ? 'var(--table-row-alt, rgba(255, 255, 255, 0.03))' 
+        : 'transparent'
+    };
+  }
+  
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: var(--table-row-hover, rgba(0, 123, 255, 0.05));
+  }
 `;
 
 const ValidationError = styled.div`
@@ -408,6 +439,7 @@ const Inventory: React.FC = () => {
     description: '',
     group: '',
     unit: '',
+    basePrice: 0,
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState('');
@@ -574,6 +606,7 @@ const Inventory: React.FC = () => {
       description: '',
       group: '',
       unit: '',
+      basePrice: 0,
     });
     setFormErrors([]);
   };
@@ -648,6 +681,7 @@ const Inventory: React.FC = () => {
       description: item.description,
       group: item.group,
       unit: item.unit,
+      basePrice: item.basePrice || 0,
     });
     setShowForm(true);
   };
@@ -770,6 +804,17 @@ const Inventory: React.FC = () => {
                   required
                 />
               </div>
+              <div>
+                <label>Base Price (R)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.basePrice || 0}
+                  onChange={(e) => setFormData({ ...formData, basePrice: parseFloat(e.target.value) || 0 })}
+                  placeholder="0.00"
+                />
+              </div>
             </FormGrid>
             {formErrors.length > 0 && (
               <ValidationError>
@@ -825,6 +870,11 @@ const Inventory: React.FC = () => {
                 {t('unit')}
               </SortableHeader>
             </UnitHeader>
+            <PriceHeader>
+              <SortableHeader sortable onClick={() => handleSort('basePrice')} className={getSortClass('basePrice')}>
+                Base Price (R)
+              </SortableHeader>
+            </PriceHeader>
             {user?.role === 'admin' && <ActionsHeader>{t('actions')}</ActionsHeader>}
           </tr>
         </thead>
@@ -839,6 +889,9 @@ const Inventory: React.FC = () => {
               </DescriptionColumn>
               <GroupColumn>{highlightSearchTerm(item.group, search)}</GroupColumn>
               <UnitColumn>{highlightSearchTerm(item.unit, search)}</UnitColumn>
+              <PriceColumn>
+                R {(item.basePrice || 0).toFixed(2)}
+              </PriceColumn>
               {user?.role === 'admin' && (
                 <ActionsColumn>
                   <ActionButtons>
@@ -890,6 +943,13 @@ const Inventory: React.FC = () => {
                 <MobileCardLabel>{t('unit')}</MobileCardLabel>
                 <MobileCardValue>
                   {highlightSearchTerm(item.unit, search)}
+                </MobileCardValue>
+              </MobileCardField>
+              
+              <MobileCardField>
+                <MobileCardLabel>Base Price</MobileCardLabel>
+                <MobileCardValue style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
+                  R {(item.basePrice || 0).toFixed(2)}
                 </MobileCardValue>
               </MobileCardField>
             </MobileCardContent>

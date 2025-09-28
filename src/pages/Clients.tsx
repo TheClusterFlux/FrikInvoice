@@ -19,7 +19,7 @@ const ClientsContainer = styled.div`
   margin: 0 auto;
   position: relative;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     padding-bottom: 80px; /* Space for floating button */
   }
 `;
@@ -44,7 +44,7 @@ const FilterGroup = styled.div`
 const FloatingActionButton = styled.button`
   display: none;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     display: flex;
     position: fixed;
     bottom: 20px;
@@ -78,7 +78,7 @@ const DesktopButtons = styled.div`
   display: flex;
   gap: 12px;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     display: none;
   }
 `;
@@ -88,8 +88,8 @@ const ClientsTable = styled(Table)`
   table-layout: fixed;
   width: 100%;
   
-  @media (max-width: 768px) {
-    display: none; /* Hide table on mobile */
+  @media (max-width: 1300px) {
+    display: none; /* Hide table on small screens */
   }
 `;
 
@@ -97,15 +97,15 @@ const TableContainer = styled.div`
   overflow-x: auto;
   margin-bottom: 20px;
   
-  @media (max-width: 768px) {
-    display: none; /* Hide table on mobile */
+  @media (max-width: 1300px) {
+    display: none; /* Hide table on small screens */
   }
 `;
 
 const MobileCardContainer = styled.div`
   display: none;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1300px) {
     display: block;
     margin-bottom: 20px;
   }
@@ -324,9 +324,24 @@ const PaginationContainer = styled.div`
 const TableRow = styled.tr<{ alternating: boolean; index: number }>`
   background-color: ${props => 
     props.alternating && props.index % 2 === 1 
-      ? '#f8f9fa' 
+      ? 'var(--table-row-alt, rgba(0, 0, 0, 0.02))' 
       : 'transparent'
   };
+  
+  /* Dark mode alternating rows */
+  @media (prefers-color-scheme: dark) {
+    background-color: ${props => 
+      props.alternating && props.index % 2 === 1 
+        ? 'var(--table-row-alt, rgba(255, 255, 255, 0.03))' 
+        : 'transparent'
+    };
+  }
+  
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: var(--table-row-hover, rgba(0, 123, 255, 0.05));
+  }
 `;
 
 const Clients: React.FC = () => {
