@@ -15,6 +15,7 @@ import {
 import { orderService, CreateOrderData } from '../services/orderService';
 import { inventoryService, InventoryItem } from '../services/inventoryService';
 import { clientService, Client } from '../services/clientService';
+import { draftService, DraftOrderData } from '../services/draftService';
 import { calculateTotalQuantity, detectUnitCategory, convertToBaseUnit, convertToDisplayUnit, formatQuantity } from '../utils/unitConversion';
 import { calculateTaxForItems, getTaxCalculationMethod } from '../utils/taxCalculation';
 import { formatCurrency } from '../utils/currency';
@@ -1286,6 +1287,20 @@ const OrderFormPage: React.FC = () => {
     () => clientService.getClients()
   );
 
+  // Fetch draft order if not editing
+  const { data: draftData } = useQuery(
+    'draft-order',
+    () => draftService.getDraft(),
+    { 
+      enabled: !isEditing,
+      onSuccess: (draft) => {
+        if (draft) {
+          logger.info('OrderForm', 'Draft order loaded', { draftId: draft._id });
+        }
+      }
+    }
+  );
+
   // Fetch existing order if editing
   const { data: existingOrder } = useQuery(
     ['order', id],
@@ -1299,6 +1314,14 @@ const OrderFormPage: React.FC = () => {
         responseData: data
       });
       queryClient.invalidateQueries('orders');
+      
+      // Delete draft after successful order creation
+      if (!isEditing) {
+        draftService.deleteDraft().catch(error => {
+          logger.error('OrderForm', 'Failed to delete draft after order creation', { error: error.message });
+        });
+      }
+      
       navigate('/orders');
     },
     onError: (error: any) => {
@@ -1379,6 +1402,55 @@ const OrderFormPage: React.FC = () => {
       });
     }
   }, [existingOrder]);
+
+  // Load draft data when not editing
+  useEffect(() => {
+    if (!isEditing && draftData) {
+      const draft = draftData;
+      setFormData({
+        customerInfo: draft.customerInfo,
+        items: draft.items.map(item => ({
+          inventoryId: typeof item.inventoryId === 'string' ? item.inventoryId : item.inventoryId._id,
+          quantity: item.quantity,
+          unit: item.unit,
+          unitPrice: item.unitPrice,
+          basePrice: item.basePrice,
+          markup: item.markup,
+          calculationBreakdown: item.calculationBreakdown,
+        })),
+        taxRate: draft.taxRate || 0,
+        notes: draft.notes || '',
+      });
+      
+      if (draft.selectedClientId) {
+        setSelectedClientId(typeof draft.selectedClientId === 'string' ? draft.selectedClientId : draft.selectedClientId._id);
+        setIsCustomerSectionCollapsed(true);
+      }
+      
+      logger.info('OrderForm', 'Draft data loaded into form', { 
+        itemCount: draft.items.length,
+        hasClient: !!draft.selectedClientId 
+      });
+    }
+  }, [isEditing, draftData]);
+
+  // Auto-save draft functionality
+  useEffect(() => {
+    if (!isEditing && (formData.customerInfo.name || formData.items.length > 0)) {
+      const saveTimer = setTimeout(() => {
+        const draftData: DraftOrderData = {
+          ...formData,
+          selectedClientId: selectedClientId
+        };
+        
+        draftService.saveDraft(draftData).catch(error => {
+          logger.error('OrderForm', 'Failed to auto-save draft', { error: error.message });
+        });
+      }, 2000); // Auto-save after 2 seconds of inactivity
+
+      return () => clearTimeout(saveTimer);
+    }
+  }, [formData, selectedClientId, isEditing]);
 
   // Client autopopulation function
   const handleClientSelect = (client: Client) => {
@@ -2184,9 +2256,10 @@ const OrderFormPage: React.FC = () => {
                       </ItemDetailGroup>
                     </ItemDetailsSection>
                     
-                    {/* Show cancel button for empty items (new item mode) */}
-                    {!item.inventoryId && (!item.quantity || item.quantity <= 1) && (!item.unitPrice || item.unitPrice <= 0) && (
-                      <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                    {/* Show action buttons at bottom right */}
+                    <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                      {/* Show cancel button for empty items (new item mode) */}
+                      {!item.inventoryId && (!item.quantity || item.quantity <= 1) && (!item.unitPrice || item.unitPrice <= 0) ? (
                         <CancelItemButton 
                           type="button" 
                           onClick={(e) => {
@@ -2196,8 +2269,20 @@ const OrderFormPage: React.FC = () => {
                         >
                           Cancel Item
                         </CancelItemButton>
-                      </div>
-                    )}
+                      ) : (
+                        /* Show remove button for existing items */
+                        <CancelItemButton 
+                          type="button" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeItem(index);
+                          }}
+                          style={{ backgroundColor: '#dc3545', color: 'white' }}
+                        >
+                          Remove Item
+                        </CancelItemButton>
+                      )}
+                    </div>
                   </ItemCardContent>
                 </ItemCard>
               );
