@@ -16,6 +16,8 @@ import { orderService, Order } from '../services/orderService';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import PDFTemplateModal from '../components/PDFTemplateModal';
+import ViewInvoiceModal from '../components/ViewInvoiceModal';
+import { formatCurrency } from '../utils/currency';
 
 const OrdersContainer = styled.div`
   max-width: 1200px;
@@ -363,6 +365,8 @@ const Orders: React.FC = () => {
   const [signedBy, setSignedBy] = useState('');
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [selectedOrderForPDF, setSelectedOrderForPDF] = useState<Order | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedOrderForView, setSelectedOrderForView] = useState<Order | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Order | null>(null);
@@ -445,6 +449,11 @@ const Orders: React.FC = () => {
     setPdfModalOpen(true);
   };
 
+  const handleViewInvoice = (order: Order) => {
+    setSelectedOrderForView(order);
+    setViewModalOpen(true);
+  };
+
   const handlePDFTemplateSelect = async (template: string) => {
     if (!selectedOrderForPDF) return;
     
@@ -461,13 +470,6 @@ const Orders: React.FC = () => {
     } catch (error) {
       console.error('Failed to download PDF:', error);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
@@ -567,6 +569,15 @@ const Orders: React.FC = () => {
                       {t('edit')}
                     </Button>
                   )}
+                  {order.status === 'signed' && (
+                    <Button 
+                      variant="secondary" 
+                      onClick={() => handleViewInvoice(order)}
+                      style={{ padding: '6px 12px', fontSize: '12px' }}
+                    >
+                      View
+                    </Button>
+                  )}
                   <Button 
                     variant="secondary" 
                     onClick={() => handleDownloadPDF(order)}
@@ -654,6 +665,15 @@ const Orders: React.FC = () => {
                   style={{ padding: '8px 16px', fontSize: '14px' }}
                 >
                   {t('edit')}
+                </Button>
+              )}
+              {order.status === 'signed' && (
+                <Button 
+                  variant="secondary" 
+                  onClick={() => handleViewInvoice(order)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  View
                 </Button>
               )}
               <Button 
@@ -762,6 +782,16 @@ const Orders: React.FC = () => {
         onSelectTemplate={handlePDFTemplateSelect}
         orderId={selectedOrderForPDF?._id || ''}
         orderNumber={selectedOrderForPDF?.invoiceNumber || ''}
+      />
+
+      {/* View Invoice Modal */}
+      <ViewInvoiceModal
+        isOpen={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedOrderForView(null);
+        }}
+        order={selectedOrderForView}
       />
 
       {/* Delete Confirmation Modal */}

@@ -3,8 +3,10 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { Card, Button } from '../styles/GlobalStyles';
 import { signingService } from '../services/signingService';
+import { orderService } from '../services/orderService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useTranslation, Translations } from '../contexts/TranslationContext';
+import { formatCurrency } from '../utils/currency';
 
 const SignContainer = styled.div`
   max-width: 900px;
@@ -310,13 +312,6 @@ const SignButton = styled(Button)`
   }
 `;
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-};
-
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -361,6 +356,8 @@ const SignInvoice: React.FC = () => {
   const [orderData, setOrderData] = useState<any>(null);
   const [signedBy, setSignedBy] = useState('');
   const [consentAcknowledged, setConsentAcknowledged] = useState(false);
+  const [sendingPDF, setSendingPDF] = useState(false);
+  const [pdfSent, setPdfSent] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -450,14 +447,50 @@ const SignInvoice: React.FC = () => {
     );
   }
 
+  const handleSendPDF = async () => {
+    if (!orderData?.order?._id) return;
+    
+    setSendingPDF(true);
+    setError(null);
+    
+    try {
+      await orderService.sendInvoicePDFEmail(
+        orderData.order._id,
+        orderData.order.customerInfo?.email
+      );
+      setPdfSent(true);
+    } catch (err: any) {
+      setError(err.response?.data?.error?.message || 'Failed to send invoice PDF');
+    } finally {
+      setSendingPDF(false);
+    }
+  };
+
   if (success) {
     return (
       <SignContainer>
         <SuccessMessage>
           <h2>{t('invoiceSignedSuccessfully')}</h2>
           <p>Thank you for signing invoice {orderData?.order?.invoiceNumber || ''}.</p>
-          <p>You can safely close this tab.</p>
+          {!pdfSent && orderData?.order?.customerInfo?.email && (
+            <p style={{ marginTop: '20px' }}>
+              <Button 
+                onClick={handleSendPDF} 
+                disabled={sendingPDF}
+                style={{ marginTop: '10px' }}
+              >
+                {sendingPDF ? 'Sending...' : 'Click here to receive a copy of the invoice in your inbox'}
+              </Button>
+            </p>
+          )}
+          {pdfSent && (
+            <p style={{ marginTop: '15px', fontWeight: 'bold' }}>
+              Invoice PDF has been sent to your email!
+            </p>
+          )}
+          <p style={{ marginTop: '20px' }}>You can safely close this tab.</p>
         </SuccessMessage>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
       </SignContainer>
     );
   }

@@ -177,4 +177,9 @@ export const orderService = {
     const response = await api.post(`/orders/${id}/send-signing-email`, { email });
     return response.data.data;
   },
+
+  async sendInvoicePDFEmail(id: string, email?: string): Promise<{ email: string }> {
+    const response = await api.post(`/orders/${id}/send-pdf-email`, { email });
+    return response.data.data;
+  },
 };

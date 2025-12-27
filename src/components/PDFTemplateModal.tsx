@@ -137,7 +137,8 @@ const PDFTemplateModal: React.FC<PDFTemplateModalProps> = ({
     professional: 'Clean, professional layout with standard business styling and bilingual support',
     compact: 'Compact, minimal design optimized for quick printing with essential fields',
     bilingual: 'Full bilingual Afrikaans/English template matching OOSVAAL LANDBOU design',
-    'ultra-compact': 'Ultra-compact layout optimized for small print formats and space efficiency'
+    'ultra-compact': 'Ultra-compact layout optimized for small print formats and space efficiency',
+    'signing-screen': 'Modern, clean design matching the invoice signing screen with card-based layout'
   };
 
   useEffect(() => {
