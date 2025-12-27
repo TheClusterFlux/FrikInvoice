@@ -56,7 +56,31 @@ const Login: React.FC = () => {
       await login(username, password);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || t('loginError'));
+      console.error('Login error:', err);
+      const errorData = err.response?.data?.error;
+      let errorMessage = errorData?.message || 
+                        err.message || 
+                        'Login failed. Please check your credentials.';
+      
+      // Handle rate limit errors with retry information
+      if (errorData?.code === 'RATE_LIMIT_EXCEEDED') {
+        if (errorData?.retryAfter) {
+          const retrySeconds = Math.ceil(errorData.retryAfter);
+          const retryMinutes = Math.ceil(retrySeconds / 60);
+          if (retryMinutes > 1) {
+            errorMessage += ` You can try again in ${retryMinutes} minutes.`;
+          } else {
+            errorMessage += ` You can try again in ${retrySeconds} seconds.`;
+          }
+        }
+      }
+      
+      setError(errorMessage);
+      console.error('Login error details:', {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: errorMessage
+      });
     } finally {
       setLoading(false);
     }
@@ -65,7 +89,7 @@ const Login: React.FC = () => {
   return (
     <LoginContainer>
       <LoginCard>
-        <LoginTitle>FrikInvoice {t('login')}</LoginTitle>
+        <LoginTitle>Invoice Manager {t('login')}</LoginTitle>
         <LoginForm onSubmit={handleSubmit}>
           <FormGroup>
             <Label htmlFor="username">{t('username')}</Label>
@@ -97,12 +121,6 @@ const Login: React.FC = () => {
             {loading ? t('loading') : t('loginButton')}
           </LoginButton>
         </LoginForm>
-        
-        <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', color: '#666' }}>
-          <p>Default credentials:</p>
-          <p><strong>Username:</strong> admin</p>
-          <p><strong>Password:</strong> admin123</p>
-        </div>
       </LoginCard>
     </LoginContainer>
   );

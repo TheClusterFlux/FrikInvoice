@@ -583,7 +583,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <>
       {/* Mobile Navbar - Fixed at top */}
       <MobileNavbar isOpen={mobileNavOpen} data-mobile-nav>
-        <MobileLogo>FrikInvoice</MobileLogo>
+        <MobileLogo>Invoice Manager</MobileLogo>
         <BurgerButton isOpen={mobileNavOpen} onClick={toggleMobileNav}>
           {mobileNavOpen ? '✕' : '☰'}
         </BurgerButton>
@@ -646,7 +646,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Sidebar collapsed={sidebarCollapsed} isDark={isDark}>
         <SidebarHeader collapsed={sidebarCollapsed}>
           <Logo collapsed={sidebarCollapsed}>
-            {sidebarCollapsed ? 'FI' : 'FrikInvoice'}
+            {sidebarCollapsed ? 'IM' : 'Invoice Manager'}
           </Logo>
         </SidebarHeader>
         <Nav collapsed={sidebarCollapsed}>

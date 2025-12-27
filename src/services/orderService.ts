@@ -172,4 +172,9 @@ export const orderService = {
     const response = await api.get(`/orders/${id}/audit`);
     return response.data.data;
   },
+
+  async sendSigningEmail(id: string, email?: string): Promise<{ email: string; tokenId: string; expiresAt: string }> {
+    const response = await api.post(`/orders/${id}/send-signing-email`, { email });
+    return response.data.data;
+  },
 };

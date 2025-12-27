@@ -24,15 +24,15 @@ COPY package*.json ./
 # Install all dependencies (including dev dependencies)
 RUN npm install --legacy-peer-deps
 
-# Create user for security (do this before copying source)
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+# Create cache directories that are writable
+RUN mkdir -p /app/node_modules/.cache /tmp/.eslintcache && \
+    chmod -R 777 /app/node_modules/.cache /tmp/.eslintcache
 
 # Copy source code (this layer changes most frequently)
-COPY --chown=nodejs:nodejs . .
+COPY . .
 
-USER nodejs
-
+# Note: Running as root in development for simplicity
+# In production, use a non-root user
 EXPOSE 3000
 
 CMD ["npm", "start"]

@@ -239,13 +239,14 @@ const ActionButtons = styled.div`
 `;
 
 const SuccessMessage = styled.div`
-  background-color: #f0fff4;
-  border: 1px solid #9ae6b4;
+  background-color: var(--success-bg, #d1e7dd);
+  border: 1px solid var(--success-border, #badbcc);
   border-radius: 4px;
-  padding: 8px 12px;
+  padding: 12px 16px;
   margin-bottom: 16px;
-  font-size: 13px;
-  color: #22543d;
+  font-size: 14px;
+  color: var(--success-text, #0f5132);
+  font-weight: 500;
 `;
 
 const ConfirmationModal = styled.div`
@@ -569,7 +570,8 @@ const Users: React.FC = () => {
     setEditFormData({
       username: user.username,
       role: user.role,
-      isActive: user.isActive
+      isActive: user.isActive,
+      invoiceCode: user.invoiceCode || '01'
     });
     setIsEditModalOpen(true);
     setFormErrors([]);
@@ -583,10 +585,26 @@ const Users: React.FC = () => {
     // Validate form
     const errors: string[] = [];
     if (!editFormData.username?.trim()) errors.push('Username is required');
+    
+    // Validate invoice code if provided
+    if (editFormData.invoiceCode !== undefined) {
+      const invoiceCode = editFormData.invoiceCode.trim();
+      if (invoiceCode.length > 10) {
+        errors.push('Invoice code must be 10 characters or less');
+      }
+      if (invoiceCode && !/^[A-Z0-9]{1,10}$/.test(invoiceCode)) {
+        errors.push('Invoice code must be alphanumeric and uppercase, max 10 characters');
+      }
+    }
 
     if (errors.length > 0) {
       setFormErrors(errors);
       return;
+    }
+    
+    // Ensure invoice code is uppercase
+    if (editFormData.invoiceCode !== undefined) {
+      editFormData.invoiceCode = editFormData.invoiceCode.toUpperCase().trim();
     }
 
     updateMutation.mutate({ id: selectedUser._id, data: editFormData });
@@ -906,6 +924,26 @@ const Users: React.FC = () => {
                 <option value="clerk">Clerk</option>
                 <option value="admin">Admin</option>
               </Select>
+            </FormGroup>
+            
+            <FormGroup>
+              <Label>Invoice Code</Label>
+              <Input
+                type="text"
+                value={editFormData.invoiceCode || '01'}
+                onChange={(e) => {
+                  const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                  if (value.length <= 10) {
+                    setEditFormData({ ...editFormData, invoiceCode: value });
+                  }
+                }}
+                placeholder="01"
+                maxLength={10}
+                style={{ textTransform: 'uppercase' }}
+              />
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                Invoice code used in invoice numbers (e.g., 05-00001). Alphanumeric, uppercase, max 10 characters.
+              </div>
             </FormGroup>
             
             <FormGroup>

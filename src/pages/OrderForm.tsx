@@ -207,7 +207,7 @@ const PriceInputDisabled = styled(PriceInput)`
 `;
 
 // Modern Item Card Components
-const ItemCard = styled.div<{ isExpanded: boolean }>`
+const ItemCard = styled.div<{ $isExpanded: boolean }>`
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -244,15 +244,15 @@ const RemoveItemButton = styled.button`
   }
 `;
 
-const ItemCardContent = styled.div<{ isExpanded: boolean }>`
-  padding: ${({ isExpanded }) => isExpanded ? '24px' : '0'};
-  max-height: ${({ isExpanded }) => isExpanded ? '1000px' : '0'};
+const ItemCardContent = styled.div<{ $isExpanded: boolean }>`
+  padding: ${({ $isExpanded }) => $isExpanded ? '24px' : '0'};
+  max-height: ${({ $isExpanded }) => $isExpanded ? '1000px' : '0'};
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: ${({ isExpanded }) => isExpanded ? '1' : '0'};
+  opacity: ${({ $isExpanded }) => $isExpanded ? '1' : '0'};
   
   @media (max-width: 768px) {
-    padding: ${({ isExpanded }) => isExpanded ? '20px' : '0'};
+    padding: ${({ $isExpanded }) => $isExpanded ? '20px' : '0'};
   }
 `;
 
@@ -1334,7 +1334,20 @@ const OrderFormPage: React.FC = () => {
       });
       
       const errorData = error.response?.data?.error;
-      if (errorData?.code === 'VALIDATION_ERROR' && errorData?.details) {
+      if (errorData?.code === 'RATE_LIMIT_EXCEEDED') {
+        // Handle rate limit errors with retry information
+        let rateLimitMessage = errorData?.message || 'Too many requests. Please try again later.';
+        if (errorData?.retryAfter) {
+          const retrySeconds = Math.ceil(errorData.retryAfter);
+          const retryMinutes = Math.ceil(retrySeconds / 60);
+          if (retryMinutes > 1) {
+            rateLimitMessage += ` You can try again in ${retryMinutes} minutes.`;
+          } else {
+            rateLimitMessage += ` You can try again in ${retrySeconds} seconds.`;
+          }
+        }
+        setFormError(rateLimitMessage);
+      } else if (errorData?.code === 'VALIDATION_ERROR' && errorData?.details) {
         logger.warn('OrderForm', 'Backend validation errors', {
           code: errorData.code,
           details: errorData.details
@@ -1438,8 +1451,18 @@ const OrderFormPage: React.FC = () => {
   useEffect(() => {
     if (!isEditing && (formData.customerInfo.name || formData.items.length > 0)) {
       const saveTimer = setTimeout(() => {
+        // Filter out items with empty or invalid inventoryId before saving draft
+        const validItems = formData.items.filter(item => {
+          const id = item.inventoryId;
+          return id && 
+                 typeof id === 'string' && 
+                 id.trim() !== '' && 
+                 /^[0-9a-fA-F]{24}$/.test(id.trim());
+        });
+        
         const draftData: DraftOrderData = {
           ...formData,
+          items: validItems, // Only save valid items
           selectedClientId: selectedClientId
         };
         
@@ -1504,17 +1527,22 @@ const OrderFormPage: React.FC = () => {
 
   const addItem = () => {
     // Check if there's already an empty/new item that hasn't been completed
-    // An empty item is one that has no inventoryId and default values AND was just added
-    const hasEmptyNewItem = formData.items.some((item, index) => 
-      !item.inventoryId && 
-      (!item.quantity || item.quantity <= 1) && 
-      (!item.unitPrice || item.unitPrice <= 0) &&
-      // Only consider it a "new empty item" if it's the last item (most recently added)
-      index === formData.items.length - 1
-    );
+    // An empty item is one that has no inventoryId or has invalid data
+    const hasEmptyItem = formData.items.some((item) => {
+      const id = item.inventoryId;
+      const hasValidId = id && 
+                        typeof id === 'string' && 
+                        id.trim() !== '' && 
+                        /^[0-9a-fA-F]{24}$/.test(id.trim());
+      const hasValidQuantity = item.quantity && item.quantity > 0;
+      const hasValidPrice = item.unitPrice && item.unitPrice > 0;
+      
+      // Item is empty if it doesn't have a valid inventory ID
+      return !hasValidId || !hasValidQuantity || !hasValidPrice;
+    });
     
-    if (hasEmptyNewItem) {
-      setFormError('Please complete the current item before adding a new one.');
+    if (hasEmptyItem) {
+      setFormError('Please complete the current item before adding a new one. All items must have a selected inventory item, quantity, and price.');
       return;
     }
     
@@ -1783,7 +1811,10 @@ const OrderFormPage: React.FC = () => {
             itemId: item.inventoryId,
             availableIds: inventoryData?.data?.map(inv => inv._id) || []
           });
-          return item;
+          // Set a user-friendly error message
+          setFormError(`Item ${index + 1}: The selected inventory item was not found. Please select a valid item or remove this item from the order.`);
+          setLoading(false);
+          throw new Error(`Inventory item not found for item ${index + 1}`);
         }
         
         const category = detectUnitCategory(item.unit);
@@ -1824,9 +1855,34 @@ const OrderFormPage: React.FC = () => {
         }))
       });
 
+      // Filter out items with empty or invalid inventoryId before submission
+      // MongoDB ObjectId must be 24 hex characters
+      const validItems = itemsWithCalculations.filter(item => {
+        const id = item.inventoryId;
+        return id && 
+               typeof id === 'string' && 
+               id.trim() !== '' && 
+               /^[0-9a-fA-F]{24}$/.test(id.trim());
+      });
+      
+      if (validItems.length === 0) {
+        setFormError('Please add at least one valid item to the order.');
+        setLoading(false);
+        return;
+      }
+      
+      logger.debug('OrderForm', 'Filtered items for submission', {
+        originalCount: itemsWithCalculations.length,
+        validCount: validItems.length,
+        filteredItems: itemsWithCalculations.filter(item => {
+          const id = item.inventoryId;
+          return !id || typeof id !== 'string' || id.trim() === '' || !/^[0-9a-fA-F]{24}$/.test(id.trim());
+        }).map(item => ({ inventoryId: item.inventoryId, quantity: item.quantity }))
+      });
+
       const orderData = {
         ...formData,
-        items: itemsWithCalculations
+        items: validItems
       };
 
       logger.info('OrderForm', 'Prepared order data for submission', {
@@ -2086,28 +2142,46 @@ const OrderFormPage: React.FC = () => {
               return (
                 <ItemCard 
                   key={index} 
-                  isExpanded={isExpanded}
+                  $isExpanded={isExpanded}
                   onClick={() => {
                     if (isExpanded) {
                       setExpandedItemIndex(null);
                     } else {
                       // Before expanding this item, clean up any empty new items
-                      const hasEmptyNewItem = formData.items.some((item, idx) => 
-                        !item.inventoryId && 
-                        (!item.quantity || item.quantity <= 1) && 
-                        (!item.unitPrice || item.unitPrice <= 0) &&
-                        idx === formData.items.length - 1 // Only the last item (newly added)
-                      );
+                      // Check if the clicked item itself is empty - if so, don't expand it
+                      const clickedItem = formData.items[index];
+                      const clickedItemIsEmpty = !clickedItem.inventoryId || 
+                                                 !clickedItem.quantity || 
+                                                 clickedItem.quantity <= 0 ||
+                                                 !clickedItem.unitPrice || 
+                                                 clickedItem.unitPrice <= 0;
                       
-                      if (hasEmptyNewItem) {
-                        // Remove the empty new item before expanding the clicked item
-                        const newItems = formData.items.slice(0, -1); // Remove last item
-                        setFormData({ ...formData, items: newItems });
-                        // Adjust the index if we're clicking on an item after the removed one
-                        const adjustedIndex = index >= newItems.length ? index - 1 : index;
-                        setExpandedItemIndex(adjustedIndex);
-                      } else {
+                      if (clickedItemIsEmpty && index === formData.items.length - 1) {
+                        // If clicking on the last empty item, just expand it (user wants to fill it)
                         setExpandedItemIndex(index);
+                      } else {
+                        // Remove any empty items at the end before expanding
+                        const validItems = formData.items.filter((item, idx) => {
+                          // Keep all items except empty ones at the end
+                          if (idx < index) return true; // Keep items before clicked one
+                          if (idx === index) return true; // Keep clicked item
+                          // Remove empty items after clicked item
+                          const id = item.inventoryId;
+                          const hasValidId = id && 
+                                            typeof id === 'string' && 
+                                            id.trim() !== '' && 
+                                            /^[0-9a-fA-F]{24}$/.test(id.trim());
+                          return hasValidId && item.quantity > 0 && item.unitPrice > 0;
+                        });
+                        
+                        if (validItems.length !== formData.items.length) {
+                          setFormData({ ...formData, items: validItems });
+                          // Adjust index if items were removed
+                          const adjustedIndex = Math.min(index, validItems.length - 1);
+                          setExpandedItemIndex(adjustedIndex);
+                        } else {
+                          setExpandedItemIndex(index);
+                        }
                       }
                     }
                   }}
@@ -2136,7 +2210,7 @@ const OrderFormPage: React.FC = () => {
                     </CollapsedItemSummary>
                   )}
                   
-                  <ItemCardContent isExpanded={isExpanded} onClick={(e) => e.stopPropagation()}>
+                  <ItemCardContent $isExpanded={isExpanded} onClick={(e) => e.stopPropagation()}>
                     <ItemSelectionSection>
                       <ItemSelectionLabel>Select Item</ItemSelectionLabel>
                       <ModernSearchableSelect

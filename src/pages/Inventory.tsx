@@ -329,13 +329,14 @@ const ValidationError = styled.div`
 `;
 
 const SuccessMessage = styled.div`
-  background-color: #f0fff4;
-  border: 1px solid #9ae6b4;
+  background-color: var(--success-bg, #d1e7dd);
+  border: 1px solid var(--success-border, #badbcc);
   border-radius: 4px;
-  padding: 8px 12px;
+  padding: 12px 16px;
   margin-bottom: 16px;
-  font-size: 13px;
-  color: #22543d;
+  font-size: 14px;
+  color: var(--success-text, #0f5132);
+  font-weight: 500;
 `;
 
 const ConfirmationModal = styled.div`

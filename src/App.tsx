@@ -10,6 +10,7 @@ import Orders from './pages/Orders';
 import OrderForm from './pages/OrderForm';
 import Clients from './pages/Clients';
 import Users from './pages/Users';
+import SignInvoice from './pages/SignInvoice';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
 import PasswordChangeModal from './components/PasswordChangeModal';
@@ -42,6 +43,8 @@ const App: React.FC = () => {
         <GlobalStyles />
         {!user ? (
           <Routes>
+            {/* Public routes */}
+            <Route path="/sign/:token" element={<SignInvoice />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
@@ -59,6 +62,7 @@ const App: React.FC = () => {
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/orders/new" element={<OrderForm />} />
                 <Route path="/orders/:id/edit" element={<OrderForm />} />
+                <Route path="/sign/:token" element={<SignInvoice />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>

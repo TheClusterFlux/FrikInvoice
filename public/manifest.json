@@ -1,6 +1,6 @@
 {
-  "short_name": "FrikInvoice",
-  "name": "FrikInvoice Order Management",
+  "short_name": "Invoice Manager",
+  "name": "Invoice Manager - Order Management",
   "icons": [
     {
       "src": "favicon.ico",

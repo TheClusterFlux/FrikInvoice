@@ -8,6 +8,7 @@ export interface User {
   isActive: boolean;
   mustResetPassword: boolean;
   lastLogin?: string;
+  invoiceCode?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +24,7 @@ export interface UpdateUserData {
   username?: string;
   role?: 'clerk' | 'admin';
   isActive?: boolean;
+  invoiceCode?: string;
 }
 
 export interface UserListResponse {

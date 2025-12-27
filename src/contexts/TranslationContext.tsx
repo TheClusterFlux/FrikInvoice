@@ -214,6 +214,34 @@ export interface Translations {
   errorLoadingUsers: string;
   errorLoadingClients: string;
   
+  // Signing page
+  signInvoice: string;
+  signInvoiceSubtitle: string;
+  invoiceSignedSuccessfully: string;
+  invoiceSignedRedirect: string;
+  pleaseEnterYourName: string;
+  mustAcknowledgeTerms: string;
+  invalidSigningLink: string;
+  failedToLoadInvoice: string;
+  failedToSignInvoice: string;
+  goToHome: string;
+  reviewAndSignInvoice: string;
+  billTo: string;
+  fullName: string;
+  enterFullName: string;
+  acknowledgeTerms: string;
+  signAcceptInvoice: string;
+  
+  // Signing error codes
+  errorTokenNotFound: string;
+  errorTokenInvalid: string;
+  errorTokenExpired: string;
+  errorTokenAlreadyUsed: string;
+  errorOrderNotFound: string;
+  errorOrderAlreadySigned: string;
+  errorValidationFailed: string;
+  errorGenericSigning: string;
+  
   // Pagination
   previous: string;
   next: string;
@@ -482,6 +510,34 @@ const translations: Record<'en' | 'af', Translations> = {
     errorLoadingUsers: 'Error loading users',
     errorLoadingClients: 'Error loading clients',
     
+    // Signing page
+    signInvoice: 'Sign Invoice',
+    signInvoiceSubtitle: 'Please review the invoice below and provide your signature',
+    invoiceSignedSuccessfully: 'Invoice Signed Successfully!',
+    invoiceSignedRedirect: 'Thank you for signing invoice {invoiceNumber}. You will be redirected shortly...',
+    pleaseEnterYourName: 'Please enter your name',
+    mustAcknowledgeTerms: 'You must acknowledge that you agree to the terms',
+    invalidSigningLink: 'Invalid signing link',
+    failedToLoadInvoice: 'Failed to load invoice. The link may be invalid or expired.',
+    failedToSignInvoice: 'Failed to sign invoice. Please try again.',
+    goToHome: 'Go to Home',
+    reviewAndSignInvoice: 'Review & Sign Invoice',
+    billTo: 'Bill To',
+    fullName: 'Full Name',
+    enterFullName: 'Enter your full name',
+    acknowledgeTerms: 'I acknowledge that I have reviewed this invoice and agree to the terms and conditions. By signing, I confirm that the information is accurate and I agree to pay the amount specified.',
+    signAcceptInvoice: 'Sign & Accept Invoice',
+    
+    // Signing error codes
+    errorTokenNotFound: 'This signing link is invalid or has expired. Please contact the sender to request a new link.',
+    errorTokenInvalid: 'This signing link is invalid or has expired. Please contact the sender to request a new link.',
+    errorTokenExpired: 'This signing link has expired. Please contact the sender to request a new link.',
+    errorTokenAlreadyUsed: 'This signing link has already been used. If you need to sign this invoice again, please contact the sender to request a new link.',
+    errorOrderNotFound: 'This invoice could not be found. Please contact the sender.',
+    errorOrderAlreadySigned: 'This invoice has already been signed. No further action is required.',
+    errorValidationFailed: 'Please check the information you entered and try again.',
+    errorGenericSigning: 'An error occurred while processing your request. Please try again or contact support.',
+    
     // Pagination
     previous: 'Previous',
     next: 'Next',
@@ -729,6 +785,34 @@ const translations: Record<'en' | 'af', Translations> = {
     // Error messages
     errorLoadingUsers: 'Fout met laai van gebruikers',
     errorLoadingClients: 'Fout met laai van kliënte',
+    
+    // Signing page
+    signInvoice: 'Teken Faktuur',
+    signInvoiceSubtitle: 'Gaan asseblief die faktuur hieronder deur en verskaf jou handtekening',
+    invoiceSignedSuccessfully: 'Faktuur Suksesvol Geteken!',
+    invoiceSignedRedirect: 'Dankie dat jy faktuur {invoiceNumber} geteken het. Jy sal binnekort herlei word...',
+    pleaseEnterYourName: 'Voer asseblief jou naam in',
+    mustAcknowledgeTerms: 'Jy moet erken dat jy met die bepalings saamstem',
+    invalidSigningLink: 'Ongeldige teken skakel',
+    failedToLoadInvoice: 'Kon nie faktuur laai nie. Die skakel is dalk ongeldig of het verval.',
+    failedToSignInvoice: 'Kon nie faktuur teken nie. Probeer asseblief weer.',
+    goToHome: 'Gaan na Tuis',
+    reviewAndSignInvoice: 'Gaan Deur & Teken Faktuur',
+    billTo: 'Rekening Aan',
+    fullName: 'Volle Naam',
+    enterFullName: 'Voer jou volle naam in',
+    acknowledgeTerms: 'Ek erken dat ek hierdie faktuur deurgegaan het en saamstem met die bepalings en voorwaardes. Deur te teken, bevestig ek dat die inligting akkuraat is en ek stem saam om die bedrag te betaal.',
+    signAcceptInvoice: 'Teken & Aanvaar Faktuur',
+    
+    // Signing error codes
+    errorTokenNotFound: 'Hierdie teken skakel is ongeldig of het verval. Kontak asseblief die sender om \'n nuwe skakel te versoek.',
+    errorTokenInvalid: 'Hierdie teken skakel is ongeldig of het verval. Kontak asseblief die sender om \'n nuwe skakel te versoek.',
+    errorTokenExpired: 'Hierdie teken skakel het verval. Kontak asseblief die sender om \'n nuwe skakel te versoek.',
+    errorTokenAlreadyUsed: 'Hierdie teken skakel is reeds gebruik. As jy hierdie faktuur weer moet teken, kontak asseblief die sender om \'n nuwe skakel te versoek.',
+    errorOrderNotFound: 'Hierdie faktuur kon nie gevind word nie. Kontak asseblief die sender.',
+    errorOrderAlreadySigned: 'Hierdie faktuur is reeds geteken. Geen verdere aksie word vereis nie.',
+    errorValidationFailed: 'Gaan asseblief die inligting wat jy ingevoer het na en probeer weer.',
+    errorGenericSigning: '\'n Fout het voorgekom tydens die verwerking van jou versoek. Probeer asseblief weer of kontak ondersteuning.',
     
     // Pagination
     previous: 'Vorige',

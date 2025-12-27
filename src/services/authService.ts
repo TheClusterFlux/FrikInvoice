@@ -55,8 +55,19 @@ export interface User {
 
 export const authService = {
   async login(username: string, password: string): Promise<LoginResponse> {
-    const response = await api.post('/auth/login', { username, password });
-    return response.data.data;
+    try {
+      const response = await api.post('/auth/login', { username, password });
+      if (!response.data.success) {
+        throw new Error(response.data.error?.message || 'Login failed');
+      }
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Login API error:', error);
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error.message || 'Login failed');
+      }
+      throw error;
+    }
   },
 
   async logout(): Promise<void> {
@@ -64,8 +75,16 @@ export const authService = {
   },
 
   async getCurrentUser(): Promise<User> {
-    const response = await api.get('/auth/me');
-    return response.data.data.user;
+    try {
+      const response = await api.get('/auth/me');
+      if (!response.data.success) {
+        throw new Error(response.data.error?.message || 'Failed to get user');
+      }
+      return response.data.data.user;
+    } catch (error: any) {
+      console.error('Get current user error:', error);
+      throw error;
+    }
   },
 
   async refreshToken(): Promise<{ token: string }> {

@@ -90,6 +90,7 @@ const OrdersTable = styled(Table)`
   margin-bottom: 20px;
   table-layout: fixed;
   width: 100%;
+  min-width: 1000px; /* Minimum width to prevent cramping */
   
   @media (max-width: 1300px) {
     display: none; /* Hide table on small screens */
@@ -99,9 +100,25 @@ const OrdersTable = styled(Table)`
 const TableContainer = styled.div`
   overflow-x: auto;
   margin-bottom: 20px;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   
   @media (max-width: 1300px) {
     display: none; /* Hide table on small screens */
+  }
+  
+  @media (min-width: 1301px) and (max-width: 1600px) {
+    /* Add horizontal scroll for medium screens */
+    overflow-x: auto;
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
   }
 `;
 
@@ -254,13 +271,25 @@ const ActionButtons = styled.div`
 `;
 
 const SuccessMessage = styled.div`
-  background-color: #f0fff4;
-  border: 1px solid #9ae6b4;
+  background-color: var(--success-bg, #d1e7dd);
+  border: 1px solid var(--success-border, #badbcc);
   border-radius: 4px;
-  padding: 8px 12px;
+  padding: 12px 16px;
   margin-bottom: 16px;
-  font-size: 13px;
-  color: #22543d;
+  font-size: 14px;
+  color: var(--success-text, #000000);
+  font-weight: 500;
+`;
+
+const ErrorMessageBox = styled.div`
+  background-color: var(--error-bg, #f8d7da);
+  border: 1px solid var(--error-border, #f5c2c7);
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--error-text, #000000);
+  font-weight: 500;
 `;
 
 const ConfirmationModal = styled.div`
@@ -335,6 +364,7 @@ const Orders: React.FC = () => {
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [selectedOrderForPDF, setSelectedOrderForPDF] = useState<Order | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Order | null>(null);
 
   const queryClient = useQueryClient();
@@ -367,6 +397,37 @@ const Orders: React.FC = () => {
       setTimeout(() => setSuccessMessage(''), 3000);
     },
   });
+
+  const sendSigningEmailMutation = useMutation(
+    ({ id, email }: { id: string; email?: string }) =>
+      orderService.sendSigningEmail(id, email),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('orders');
+        setSuccessMessage('Signing email sent successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      },
+      onError: (error: any) => {
+        const errorData = error.response?.data?.error;
+        if (errorData?.code === 'RATE_LIMIT_EXCEEDED') {
+          let rateLimitMessage = errorData?.message || 'Too many requests. Please try again later.';
+          if (errorData?.retryAfter) {
+            const retrySeconds = Math.ceil(errorData.retryAfter);
+            const retryMinutes = Math.ceil(retrySeconds / 60);
+            if (retryMinutes > 1) {
+              rateLimitMessage += ` You can try again in ${retryMinutes} minutes.`;
+            } else {
+              rateLimitMessage += ` You can try again in ${retrySeconds} seconds.`;
+            }
+          }
+          setErrorMessage(rateLimitMessage);
+        } else {
+          setErrorMessage(errorData?.message || 'Failed to send signing email');
+        }
+        setTimeout(() => setErrorMessage(''), 5000);
+      },
+    }
+  );
 
   const handleSignOrder = (order: Order) => {
     setSigningOrder(order);
@@ -426,6 +487,7 @@ const Orders: React.FC = () => {
       </PageHeader>
 
       {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
+      {errorMessage && <ErrorMessageBox>{errorMessage}</ErrorMessageBox>}
 
       <FiltersContainer>
         <FilterGroup>
@@ -495,14 +557,16 @@ const Orders: React.FC = () => {
               </StatusColumn>
               <ActionsColumn>
                 <ActionButtons>
-                  <Button 
-                    variant="secondary" 
-                    as={Link} 
-                    to={`/orders/${order._id}/edit`}
-                    style={{ padding: '6px 12px', fontSize: '12px' }}
-                  >
-                    {t('edit')}
-                  </Button>
+                  {order.status !== 'signed' && (
+                    <Button 
+                      variant="secondary" 
+                      as={Link} 
+                      to={`/orders/${order._id}/edit`}
+                      style={{ padding: '6px 12px', fontSize: '12px' }}
+                    >
+                      {t('edit')}
+                    </Button>
+                  )}
                   <Button 
                     variant="secondary" 
                     onClick={() => handleDownloadPDF(order)}
@@ -510,22 +574,25 @@ const Orders: React.FC = () => {
                   >
                     {t('pdf')}
                   </Button>
-                  {order.status === 'draft' && (
+                  {(order.status === 'draft' || order.status === 'pending') && order.customerInfo.email && (
                     <Button 
                       variant="secondary" 
-                      onClick={() => handleSignOrder(order)}
+                      onClick={() => sendSigningEmailMutation.mutate({ id: order._id })}
+                      disabled={sendSigningEmailMutation.isLoading}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      {t('signOrder')}
+                      {sendSigningEmailMutation.isLoading ? 'Sending...' : 'Send Signing Email'}
                     </Button>
                   )}
-                  <Button 
-                    variant="danger" 
-                    onClick={() => setShowDeleteConfirm(order)}
-                    style={{ padding: '6px 12px', fontSize: '12px' }}
-                  >
-                    {t('delete')}
-                  </Button>
+                  {order.status !== 'signed' && (
+                    <Button 
+                      variant="danger" 
+                      onClick={() => setShowDeleteConfirm(order)}
+                      style={{ padding: '6px 12px', fontSize: '12px' }}
+                    >
+                      {t('delete')}
+                    </Button>
+                  )}
                 </ActionButtons>
               </ActionsColumn>
             </TableRow>
@@ -579,14 +646,16 @@ const Orders: React.FC = () => {
             )}
             
             <MobileCardActions>
-              <Button 
-                variant="secondary" 
-                as={Link} 
-                to={`/orders/${order._id}/edit`}
-                style={{ padding: '8px 16px', fontSize: '14px' }}
-              >
-                {t('edit')}
-              </Button>
+              {order.status !== 'signed' && (
+                <Button 
+                  variant="secondary" 
+                  as={Link} 
+                  to={`/orders/${order._id}/edit`}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('edit')}
+                </Button>
+              )}
               <Button 
                 variant="secondary" 
                 onClick={() => handleDownloadPDF(order)}
@@ -594,22 +663,25 @@ const Orders: React.FC = () => {
               >
                 {t('pdf')}
               </Button>
-              {order.status === 'draft' && (
+              {(order.status === 'draft' || order.status === 'pending') && order.customerInfo.email && (
                 <Button 
                   variant="secondary" 
-                  onClick={() => handleSignOrder(order)}
+                  onClick={() => sendSigningEmailMutation.mutate({ id: order._id })}
+                  disabled={sendSigningEmailMutation.isLoading}
                   style={{ padding: '8px 16px', fontSize: '14px' }}
                 >
-                  {t('signOrder')}
+                  {sendSigningEmailMutation.isLoading ? 'Sending...' : 'Send Signing Email'}
                 </Button>
               )}
-              <Button 
-                variant="danger" 
-                onClick={() => setShowDeleteConfirm(order)}
-                style={{ padding: '8px 16px', fontSize: '14px' }}
-              >
-                {t('delete')}
-              </Button>
+              {order.status !== 'signed' && (
+                <Button 
+                  variant="danger" 
+                  onClick={() => setShowDeleteConfirm(order)}
+                  style={{ padding: '8px 16px', fontSize: '14px' }}
+                >
+                  {t('delete')}
+                </Button>
+              )}
             </MobileCardActions>
           </MobileCard>
         ))}

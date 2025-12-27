@@ -42,8 +42,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const userData = await authService.getCurrentUser();
           setUser(userData);
         }
-      } catch (error) {
-        localStorage.removeItem('token');
+      } catch (error: any) {
+        console.error('Auth initialization error:', error);
+        // Only clear token if it's an auth error (401/403)
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          localStorage.removeItem('token');
+        }
       } finally {
         setLoading(false);
       }

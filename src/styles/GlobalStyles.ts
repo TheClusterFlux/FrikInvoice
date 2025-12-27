@@ -51,9 +51,16 @@ export const GlobalStyles = createGlobalStyle`
     --text-secondary: #666666;
     --border-color: #dee2e6;
     --shadow-color: rgba(0, 0, 0, 0.1);
-    --success-bg: #f0fff4;
-    --success-border: #9ae6b4;
-    --success-text: #22543d;
+    --primary-color: #007bff;
+    --success-bg: #d1e7dd;
+    --success-border: #badbcc;
+    --success-text: #000000;
+    --error-bg: #f8d7da;
+    --error-border: #f5c2c7;
+    --error-text: #000000;
+    --warning-bg: #fff3cd;
+    --warning-border: #ffc107;
+    --warning-text: #000000;
   }
 
   /* Dark mode support */
@@ -64,9 +71,16 @@ export const GlobalStyles = createGlobalStyle`
     --text-secondary: #b0b0b0;
     --border-color: #404040;
     --shadow-color: rgba(0, 0, 0, 0.3);
+    --primary-color: #4da6ff;
     --success-bg: #1a3d1a;
     --success-border: #4a7c59;
-    --success-text: #a7f3a7;
+    --success-text: #ffffff;
+    --error-bg: #4a1a1a;
+    --error-border: #6b2a2a;
+    --error-text: #ffffff;
+    --warning-bg: #3d2f1a;
+    --warning-border: #b8860b;
+    --warning-text: #ffd700;
   }
 
   [data-theme="light"] {
@@ -76,9 +90,16 @@ export const GlobalStyles = createGlobalStyle`
     --text-secondary: #666666;
     --border-color: #dee2e6;
     --shadow-color: rgba(0, 0, 0, 0.1);
-    --success-bg: #f0fff4;
-    --success-border: #9ae6b4;
-    --success-text: #22543d;
+    --primary-color: #007bff;
+    --success-bg: #d1e7dd;
+    --success-border: #badbcc;
+    --success-text: #000000;
+    --error-bg: #f8d7da;
+    --error-border: #f5c2c7;
+    --error-text: #000000;
+    --warning-bg: #fff3cd;
+    --warning-border: #ffc107;
+    --warning-text: #000000;
   }
 
   /* Dark mode body styles */
@@ -302,9 +323,9 @@ export const StatusBadge = styled.span<{ status: string }>`
         `;
       case 'signed':
         return `
-          background-color: #d4edda;
-          color: #155724;
-          border: 1px solid #c3e6cb;
+          background-color: var(--success-bg, #d1e7dd);
+          color: var(--success-text, #000000);
+          border: 1px solid var(--success-border, #badbcc);
         `;
       case 'completed':
         return `
@@ -314,15 +335,15 @@ export const StatusBadge = styled.span<{ status: string }>`
         `;
       case 'active':
         return `
-          background-color: #d4edda;
-          color: #155724;
-          border: 1px solid #c3e6cb;
+          background-color: var(--success-bg, #d1e7dd);
+          color: var(--success-text, #000000);
+          border: 1px solid var(--success-border, #badbcc);
         `;
       case 'inactive':
         return `
-          background-color: #f8d7da;
-          color: #721c24;
-          border: 1px solid #f5c6cb;
+          background-color: var(--error-bg, #f8d7da);
+          color: var(--error-text, #000000);
+          border: 1px solid var(--error-border, #f5c2c7);
         `;
       default:
         return `
@@ -346,9 +367,9 @@ export const StatusBadge = styled.span<{ status: string }>`
         case 'signed':
         case 'active':
           return `
-            background-color: #1a4d1a;
-            color: #90ee90;
-            border-color: #2d5a2d;
+            background-color: var(--success-bg, #1a3d1a);
+            color: var(--success-text, #ffffff);
+            border-color: var(--success-border, #4a7c59);
           `;
         case 'completed':
           return `
@@ -358,9 +379,9 @@ export const StatusBadge = styled.span<{ status: string }>`
           `;
         case 'inactive':
           return `
-            background-color: #4a1a1a;
-            color: #ffb3b3;
-            border-color: #6b2a2a;
+            background-color: var(--error-bg, #4a1a1a);
+            color: var(--error-text, #ffffff);
+            border-color: var(--error-border, #6b2a2a);
           `;
         default:
           return '';
