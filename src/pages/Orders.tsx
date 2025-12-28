@@ -592,7 +592,7 @@ const Orders: React.FC = () => {
                       disabled={sendSigningEmailMutation.isLoading}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      {sendSigningEmailMutation.isLoading ? 'Sending...' : 'Send Signing Email'}
+                      {sendSigningEmailMutation.isLoading ? t('sending') : t('sendSigningEmail')}
                     </Button>
                   )}
                   {order.status !== 'signed' && (

@@ -236,6 +236,7 @@ export interface Translations {
   view: string;
   invoiceDetails: string;
   sending: string;
+  sendSigningEmail: string;
   
   // Signing error codes
   errorTokenNotFound: string;
@@ -537,6 +538,7 @@ const translations: Record<'en' | 'af', Translations> = {
     view: 'View',
     invoiceDetails: 'Invoice Details',
     sending: 'Sending...',
+    sendSigningEmail: 'Send Signing Email',
     
     // Signing error codes
     errorTokenNotFound: 'This signing link is invalid or has expired. Please contact the sender to request a new link.',
@@ -818,6 +820,7 @@ const translations: Record<'en' | 'af', Translations> = {
     view: 'Bekyk',
     invoiceDetails: 'Faktuur Besonderhede',
     sending: 'Stuur...',
+    sendSigningEmail: 'Stuur Teken E-pos',
     
     // Signing error codes
     errorTokenNotFound: 'Hierdie teken skakel is ongeldig of het verval. Kontak asseblief die sender om \'n nuwe skakel te versoek.',
