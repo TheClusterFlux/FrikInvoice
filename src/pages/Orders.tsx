@@ -575,7 +575,7 @@ const Orders: React.FC = () => {
                       onClick={() => handleViewInvoice(order)}
                       style={{ padding: '6px 12px', fontSize: '12px' }}
                     >
-                      View
+                      {t('view')}
                     </Button>
                   )}
                   <Button 
@@ -673,7 +673,7 @@ const Orders: React.FC = () => {
                   onClick={() => handleViewInvoice(order)}
                   style={{ padding: '8px 16px', fontSize: '14px' }}
                 >
-                  View
+                  {t('view')}
                 </Button>
               )}
               <Button 

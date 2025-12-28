@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Card, Button } from '../styles/GlobalStyles';
 import { formatCurrency } from '../utils/currency';
 import { Order } from '../services/orderService';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -198,6 +199,8 @@ const ViewInvoiceModal: React.FC<ViewInvoiceModalProps> = ({
   onClose,
   order,
 }) => {
+  const { t } = useTranslation();
+  
   if (!isOpen || !order) return null;
 
   const customerAddress = order.customerInfo.address;
@@ -215,43 +218,43 @@ const ViewInvoiceModal: React.FC<ViewInvoiceModalProps> = ({
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
-          <ModalTitle>Invoice Details</ModalTitle>
+          <ModalTitle>{t('invoiceDetails')}</ModalTitle>
           <CloseButton onClick={onClose}>×</CloseButton>
         </ModalHeader>
 
         <InvoiceHeader>
           <InvoiceInfo>
-            <InvoiceLabel>Invoice Number</InvoiceLabel>
+            <InvoiceLabel>{t('invoiceNumber')}</InvoiceLabel>
             <InvoiceValue>{order.invoiceNumber}</InvoiceValue>
           </InvoiceInfo>
           <InvoiceInfo>
-            <InvoiceLabel>Date</InvoiceLabel>
+            <InvoiceLabel>{t('date')}</InvoiceLabel>
             <InvoiceValue>{formatDate(order.createdAt)}</InvoiceValue>
           </InvoiceInfo>
           <InvoiceInfo style={{ textAlign: 'right' }}>
-            <InvoiceLabel>Total</InvoiceLabel>
+            <InvoiceLabel>{t('totalOrdersTable')}</InvoiceLabel>
             <InvoiceValue className="amount">{formatCurrency(order.total || 0)}</InvoiceValue>
           </InvoiceInfo>
         </InvoiceHeader>
 
         <CustomerInfo>
-          <CustomerLabel>Bill To</CustomerLabel>
+          <CustomerLabel>{t('billTo')}</CustomerLabel>
           <CustomerValue>{order.customerInfo.name}</CustomerValue>
           {order.customerInfo.email && (
             <>
-              <CustomerLabel>Email</CustomerLabel>
+              <CustomerLabel>{t('email')}</CustomerLabel>
               <CustomerValue>{order.customerInfo.email}</CustomerValue>
             </>
           )}
           {order.customerInfo.phone && (
             <>
-              <CustomerLabel>Phone</CustomerLabel>
+              <CustomerLabel>{t('phone')}</CustomerLabel>
               <CustomerValue>{order.customerInfo.phone}</CustomerValue>
             </>
           )}
           {addressString && (
             <>
-              <CustomerLabel>Address</CustomerLabel>
+              <CustomerLabel>{t('address')}</CustomerLabel>
               <CustomerValue>{addressString}</CustomerValue>
             </>
           )}
@@ -260,10 +263,10 @@ const ViewInvoiceModal: React.FC<ViewInvoiceModalProps> = ({
         <ItemsTable>
           <thead>
             <tr>
-              <th>Item</th>
-              <th>Quantity</th>
-              <th className="text-right">Unit Price</th>
-              <th className="text-right">Total Price</th>
+              <th>{t('item')}</th>
+              <th>{t('quantityInventory')}</th>
+              <th className="text-right">{t('unitPriceInventory')}</th>
+              <th className="text-right">{t('totalPrice')}</th>
             </tr>
           </thead>
           <tbody>
@@ -284,17 +287,17 @@ const ViewInvoiceModal: React.FC<ViewInvoiceModalProps> = ({
           <TotalsTable>
             <tbody>
               <tr>
-                <td>Subtotal:</td>
+                <td>{t('subtotal')}:</td>
                 <td>{formatCurrency(order.subtotal || 0)}</td>
               </tr>
               {order.taxRate > 0 && (
                 <tr>
-                  <td>Tax ({order.taxRate}%):</td>
+                  <td>{t('tax')} ({order.taxRate}%):</td>
                   <td>{formatCurrency(order.taxAmount || 0)}</td>
                 </tr>
               )}
               <tr>
-                <td>Total:</td>
+                <td>{t('totalOrdersTable')}:</td>
                 <td>{formatCurrency(order.total || 0)}</td>
               </tr>
             </tbody>
@@ -303,7 +306,7 @@ const ViewInvoiceModal: React.FC<ViewInvoiceModalProps> = ({
 
         <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'flex-end' }}>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('close')}
           </Button>
         </div>
       </ModalContent>

@@ -479,13 +479,13 @@ const SignInvoice: React.FC = () => {
                 disabled={sendingPDF}
                 style={{ marginTop: '10px' }}
               >
-                {sendingPDF ? 'Sending...' : 'Click here to receive a copy of the invoice in your inbox'}
+                {sendingPDF ? t('sending') : t('clickHereToReceiveInvoiceCopy')}
               </Button>
             </p>
           )}
           {pdfSent && (
             <p style={{ marginTop: '15px', fontWeight: 'bold' }}>
-              Invoice PDF has been sent to your email!
+              {t('invoicePDFSentToEmail')}
             </p>
           )}
           <p style={{ marginTop: '20px' }}>You can safely close this tab.</p>

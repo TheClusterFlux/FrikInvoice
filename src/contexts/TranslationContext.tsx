@@ -231,6 +231,11 @@ export interface Translations {
   enterFullName: string;
   acknowledgeTerms: string;
   signAcceptInvoice: string;
+  clickHereToReceiveInvoiceCopy: string;
+  invoicePDFSentToEmail: string;
+  view: string;
+  invoiceDetails: string;
+  sending: string;
   
   // Signing error codes
   errorTokenNotFound: string;
@@ -527,6 +532,11 @@ const translations: Record<'en' | 'af', Translations> = {
     enterFullName: 'Enter your full name',
     acknowledgeTerms: 'I acknowledge that I have reviewed this invoice and agree to the terms and conditions. By signing, I confirm that the information is accurate and I agree to pay the amount specified.',
     signAcceptInvoice: 'Sign & Accept Invoice',
+    clickHereToReceiveInvoiceCopy: 'Click here to receive a copy of the invoice in your inbox',
+    invoicePDFSentToEmail: 'Invoice PDF has been sent to your email!',
+    view: 'View',
+    invoiceDetails: 'Invoice Details',
+    sending: 'Sending...',
     
     // Signing error codes
     errorTokenNotFound: 'This signing link is invalid or has expired. Please contact the sender to request a new link.',
@@ -803,6 +813,11 @@ const translations: Record<'en' | 'af', Translations> = {
     enterFullName: 'Voer jou volle naam in',
     acknowledgeTerms: 'Ek erken dat ek hierdie faktuur deurgegaan het en saamstem met die bepalings en voorwaardes. Deur te teken, bevestig ek dat die inligting akkuraat is en ek stem saam om die bedrag te betaal.',
     signAcceptInvoice: 'Teken & Aanvaar Faktuur',
+    clickHereToReceiveInvoiceCopy: 'Klik hier om \'n afskrif van die faktuur in jou inkassie te ontvang',
+    invoicePDFSentToEmail: 'Faktuur PDF is na jou e-pos gestuur!',
+    view: 'Bekyk',
+    invoiceDetails: 'Faktuur Besonderhede',
+    sending: 'Stuur...',
     
     // Signing error codes
     errorTokenNotFound: 'Hierdie teken skakel is ongeldig of het verval. Kontak asseblief die sender om \'n nuwe skakel te versoek.',
