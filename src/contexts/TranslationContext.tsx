@@ -233,6 +233,8 @@ export interface Translations {
   signAcceptInvoice: string;
   clickHereToReceiveInvoiceCopy: string;
   invoicePDFSentToEmail: string;
+  thankYouForSigningInvoice: string;
+  youCanSafelyCloseThisTab: string;
   view: string;
   invoiceDetails: string;
   sending: string;
@@ -535,6 +537,8 @@ const translations: Record<'en' | 'af', Translations> = {
     signAcceptInvoice: 'Sign & Accept Invoice',
     clickHereToReceiveInvoiceCopy: 'Click here to receive a copy of the invoice in your inbox',
     invoicePDFSentToEmail: 'Invoice PDF has been sent to your email!',
+    thankYouForSigningInvoice: 'Thank you for signing invoice {invoiceNumber}.',
+    youCanSafelyCloseThisTab: 'You can safely close this tab.',
     view: 'View',
     invoiceDetails: 'Invoice Details',
     sending: 'Sending...',
@@ -817,6 +821,8 @@ const translations: Record<'en' | 'af', Translations> = {
     signAcceptInvoice: 'Teken & Aanvaar Faktuur',
     clickHereToReceiveInvoiceCopy: 'Klik hier om \'n afskrif van die faktuur in jou inkassie te ontvang',
     invoicePDFSentToEmail: 'Faktuur PDF is na jou e-pos gestuur!',
+    thankYouForSigningInvoice: 'Dankie dat jy faktuur {invoiceNumber} geteken het.',
+    youCanSafelyCloseThisTab: 'Jy kan hierdie oortjie veilig sluit.',
     view: 'Bekyk',
     invoiceDetails: 'Faktuur Besonderhede',
     sending: 'Stuur...',

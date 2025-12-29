@@ -471,7 +471,7 @@ const SignInvoice: React.FC = () => {
       <SignContainer>
         <SuccessMessage>
           <h2>{t('invoiceSignedSuccessfully')}</h2>
-          <p>Thank you for signing invoice {orderData?.order?.invoiceNumber || ''}.</p>
+          <p>{t('thankYouForSigningInvoice').replace('{invoiceNumber}', orderData?.order?.invoiceNumber || '')}</p>
           {!pdfSent && orderData?.order?.customerInfo?.email && (
             <p style={{ marginTop: '20px' }}>
               <Button 
@@ -488,7 +488,7 @@ const SignInvoice: React.FC = () => {
               {t('invoicePDFSentToEmail')}
             </p>
           )}
-          <p style={{ marginTop: '20px' }}>You can safely close this tab.</p>
+          <p style={{ marginTop: '20px' }}>{t('youCanSafelyCloseThisTab')}</p>
         </SuccessMessage>
         {error && <ErrorMessage>{error}</ErrorMessage>}
       </SignContainer>
