@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -877,6 +877,20 @@ const ModernSearchableSelect: React.FC<ModernSearchableSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
+  // Log inventory items when component receives them
+  useEffect(() => {
+    logger.debug('ModernSearchableSelect', 'Component received inventory items', {
+      itemCount: inventoryItems.length,
+      items: inventoryItems.slice(0, 5).map(item => ({
+        id: item._id,
+        code: item.code,
+        description: item.description,
+        isActive: item.isActive
+      })),
+      allCodes: inventoryItems.map(item => item.code)
+    });
+  }, [inventoryItems]);
+
   // Find selected item when value changes
   useEffect(() => {
     if (value) {
@@ -892,24 +906,64 @@ const ModernSearchableSelect: React.FC<ModernSearchableSelectProps> = ({
   }, [value, inventoryItems]);
 
   // Filter items based on search term
-  const filteredItems = inventoryItems.filter(item => {
+  const filteredItems = useMemo(() => {
+    logger.debug('ModernSearchableSelect', 'Filtering items', {
+      searchTerm,
+      totalItems: inventoryItems.length,
+      searchTermEmpty: !searchTerm.trim()
+    });
+
+    if (!searchTerm.trim()) {
+      // When search term is empty, show all items (up to a reasonable limit for performance)
+      const allItems = inventoryItems.slice(0, 100);
+      logger.debug('ModernSearchableSelect', 'Showing all items (empty search)', {
+        showingCount: allItems.length,
+        totalAvailable: inventoryItems.length
+      });
+      return allItems;
+    }
+    
     const searchLower = searchTerm.toLowerCase();
-    return (
-      item.code.toLowerCase().includes(searchLower) ||
-      item.description.toLowerCase().includes(searchLower) ||
-      item.group.toLowerCase().includes(searchLower)
-    );
-  });
+    const filtered = inventoryItems.filter(item => {
+      return (
+        item.code.toLowerCase().includes(searchLower) ||
+        item.description.toLowerCase().includes(searchLower) ||
+        item.group.toLowerCase().includes(searchLower)
+      );
+    });
+    
+    logger.debug('ModernSearchableSelect', 'Filtered items', {
+      searchTerm,
+      filteredCount: filtered.length,
+      totalItems: inventoryItems.length,
+      filteredCodes: filtered.map(item => item.code)
+    });
+    
+    return filtered;
+  }, [searchTerm, inventoryItems]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSearchTerm = e.target.value;
     setSearchTerm(newSearchTerm);
     setIsOpen(true);
     
-    // Clear selection if no exact match
-    if (selectedItem && !newSearchTerm.includes(selectedItem.code)) {
+    // If user clears the input completely, clear the selection to allow searching all items
+    if (!newSearchTerm.trim()) {
       setSelectedItem(null);
       onChange('');
+      return;
+    }
+    
+    // Clear selection if search term doesn't match the selected item
+    if (selectedItem) {
+      const matchesSelected = 
+        newSearchTerm.toLowerCase().includes(selectedItem.code.toLowerCase()) ||
+        newSearchTerm.toLowerCase().includes(selectedItem.description.toLowerCase());
+      
+      if (!matchesSelected) {
+        setSelectedItem(null);
+        onChange('');
+      }
     }
   };
 
@@ -922,10 +976,13 @@ const ModernSearchableSelect: React.FC<ModernSearchableSelectProps> = ({
 
   const handleInputFocus = () => {
     setIsOpen(true);
+    // If there's a selected item and the search term matches it, allow user to search by clearing
+    // The filteredItems will automatically show all items when searchTerm is empty
   };
 
   const handleInputBlur = () => {
-    setTimeout(() => setIsOpen(false), 150);
+    // Increase delay to allow clicking on dropdown items
+    setTimeout(() => setIsOpen(false), 200);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -955,21 +1012,48 @@ const ModernSearchableSelect: React.FC<ModernSearchableSelectProps> = ({
       />
       {isOpen && filteredItems.length > 0 && (
         <ModernDropdownList>
-          {filteredItems.slice(0, 8).map((item) => (
+          {filteredItems.slice(0, 20).map((item) => (
             <ModernDropdownItem
               key={item._id}
-              onClick={() => handleItemSelect(item)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleItemSelect(item);
+              }}
+              onMouseDown={(e) => {
+                // Prevent input blur when clicking on dropdown item
+                e.preventDefault();
+              }}
             >
               <ModernItemCode>{item.code}</ModernItemCode>
               <ModernItemDescription>{item.description}</ModernItemDescription>
               <ModernItemGroup>{item.group}</ModernItemGroup>
             </ModernDropdownItem>
           ))}
-          {filteredItems.length > 8 && (
-            <ModernDropdownItem style={{ textAlign: 'center', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-              ... and {filteredItems.length - 8} more items
+          {filteredItems.length > 20 && (
+            <ModernDropdownItem style={{ textAlign: 'center', color: 'var(--text-secondary)', fontStyle: 'italic', cursor: 'default' }}>
+              ... and {filteredItems.length - 20} more items (keep typing to filter)
             </ModernDropdownItem>
           )}
+        </ModernDropdownList>
+      )}
+      {isOpen && filteredItems.length === 0 && searchTerm.trim() && (
+        <ModernDropdownList>
+          <ModernDropdownItem style={{ textAlign: 'center', color: 'var(--text-secondary)', fontStyle: 'italic', cursor: 'default' }}>
+            No items found matching "{searchTerm}"
+            {inventoryItems.length > 0 && (
+              <div style={{ fontSize: '11px', marginTop: '4px' }}>
+                (Searching through {inventoryItems.length} {inventoryItems.length === 1 ? 'item' : 'items'})
+              </div>
+            )}
+          </ModernDropdownItem>
+        </ModernDropdownList>
+      )}
+      {isOpen && filteredItems.length === 0 && !searchTerm.trim() && inventoryItems.length === 0 && (
+        <ModernDropdownList>
+          <ModernDropdownItem style={{ textAlign: 'center', color: 'var(--text-secondary)', fontStyle: 'italic', cursor: 'default' }}>
+            No inventory items available. Please add items to inventory first.
+          </ModernDropdownItem>
         </ModernDropdownList>
       )}
     </ModernSearchableSelectContainer>
@@ -1257,19 +1341,23 @@ const OrderFormPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch inventory for item selection - get only active items
+  // Use a high limit to ensure we get all items (or explicitly request all by not setting limit)
   const { data: inventoryData, error: inventoryError, isLoading: inventoryLoading } = useQuery(
     'inventory-active',
-    () => inventoryService.getInventory({ isActive: true }),
+    () => inventoryService.getInventory({ isActive: true, limit: 1000 }), // Explicitly request up to 1000 items
     {
       onSuccess: (data) => {
         logger.info('OrderForm', 'Inventory data loaded successfully', {
           itemCount: data?.data?.length || 0,
-          firstFewItems: data?.data?.slice(0, 3).map(item => ({
+          totalItems: data?.meta?.total || 0,
+          limit: data?.meta?.limit || 0,
+          firstFewItems: data?.data?.slice(0, 5).map(item => ({
             id: item._id,
             code: item.code,
             description: item.description,
             isActive: item.isActive
-          }))
+          })),
+          allItemCodes: data?.data?.map(item => item.code) || []
         });
       },
       onError: (error: any) => {
@@ -2212,7 +2300,33 @@ const OrderFormPage: React.FC = () => {
                   
                   <ItemCardContent $isExpanded={isExpanded} onClick={(e) => e.stopPropagation()}>
                     <ItemSelectionSection>
-                      <ItemSelectionLabel>Select Item</ItemSelectionLabel>
+                      <ItemSelectionLabel>
+                        Select Item
+                        {inventoryData && (
+                          <span style={{ 
+                            marginLeft: '8px', 
+                            fontSize: '12px', 
+                            color: 'var(--text-secondary)', 
+                            fontWeight: 'normal' 
+                          }}>
+                            ({inventoryData.data?.length || 0} {inventoryData.data?.length === 1 ? 'item' : 'items'} available)
+                          </span>
+                        )}
+                      </ItemSelectionLabel>
+                      {(() => {
+                        // Log inventory data before rendering the select component
+                        logger.debug('OrderForm', 'Rendering ModernSearchableSelect', {
+                          inventoryDataExists: !!inventoryData,
+                          inventoryDataLength: inventoryData?.data?.length || 0,
+                          inventoryDataTotal: inventoryData?.meta?.total || 0,
+                          inventoryDataLimit: inventoryData?.meta?.limit || 0,
+                          inventoryLoading,
+                          inventoryError: inventoryError ? inventoryError.message : null,
+                          itemsToPass: (inventoryData?.data || []).length,
+                          firstFewItemCodes: (inventoryData?.data || []).slice(0, 5).map(item => item.code)
+                        });
+                        return null;
+                      })()}
                       <ModernSearchableSelect
                         value={item.inventoryId}
                         onChange={(inventoryId) => {
