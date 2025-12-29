@@ -1340,11 +1340,12 @@ const OrderFormPage: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  // Fetch inventory for item selection - get only active items
-  // Use a high limit to ensure we get all items (or explicitly request all by not setting limit)
+  // Fetch inventory for item selection - get all items (not just active ones)
+  // Users may need to select items that are temporarily inactive
+  // Request a high limit to get all items (or no limit to get everything)
   const { data: inventoryData, error: inventoryError, isLoading: inventoryLoading } = useQuery(
-    'inventory-active',
-    () => inventoryService.getInventory({ isActive: true, limit: 1000 }), // Explicitly request up to 1000 items
+    'inventory-all',
+    () => inventoryService.getInventory({ limit: 2000 }), // Get all items (there are ~1533 items), not just active ones
     {
       onSuccess: (data) => {
         logger.info('OrderForm', 'Inventory data loaded successfully', {
