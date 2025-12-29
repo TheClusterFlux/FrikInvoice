@@ -15,7 +15,6 @@ import {
 import { orderService, Order } from '../services/orderService';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
-import PDFTemplateModal from '../components/PDFTemplateModal';
 import ViewInvoiceModal from '../components/ViewInvoiceModal';
 import { formatCurrency } from '../utils/currency';
 
@@ -363,8 +362,6 @@ const Orders: React.FC = () => {
   const [status, setStatus] = useState('');
   const [signingOrder, setSigningOrder] = useState<Order | null>(null);
   const [signedBy, setSignedBy] = useState('');
-  const [pdfModalOpen, setPdfModalOpen] = useState(false);
-  const [selectedOrderForPDF, setSelectedOrderForPDF] = useState<Order | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedOrderForView, setSelectedOrderForView] = useState<Order | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
@@ -444,9 +441,21 @@ const Orders: React.FC = () => {
     }
   };
 
-  const handleDownloadPDF = (order: Order) => {
-    setSelectedOrderForPDF(order);
-    setPdfModalOpen(true);
+  const handleDownloadPDF = async (order: Order) => {
+    try {
+      const blob = await orderService.generatePDF(order._id, 'signing-screen');
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${order.invoiceNumber}-signing-screen.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Failed to download PDF:', error);
+      setErrorMessage('Failed to download PDF. Please try again.');
+    }
   };
 
   const handleViewInvoice = (order: Order) => {
@@ -454,23 +463,6 @@ const Orders: React.FC = () => {
     setViewModalOpen(true);
   };
 
-  const handlePDFTemplateSelect = async (template: string) => {
-    if (!selectedOrderForPDF) return;
-    
-    try {
-      const blob = await orderService.generatePDF(selectedOrderForPDF._id, template);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `invoice-${selectedOrderForPDF.invoiceNumber}-${template}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Failed to download PDF:', error);
-    }
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
@@ -772,17 +764,6 @@ const Orders: React.FC = () => {
         </div>
       )}
 
-      {/* PDF Template Selection Modal */}
-      <PDFTemplateModal
-        isOpen={pdfModalOpen}
-        onClose={() => {
-          setPdfModalOpen(false);
-          setSelectedOrderForPDF(null);
-        }}
-        onSelectTemplate={handlePDFTemplateSelect}
-        orderId={selectedOrderForPDF?._id || ''}
-        orderNumber={selectedOrderForPDF?.invoiceNumber || ''}
-      />
 
       {/* View Invoice Modal */}
       <ViewInvoiceModal
